@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>VideoOutModulePlainNETMF</name>
+    </assembly>
+    <members>
+        <member name="T:VideoOutModulePlainNETMF.RGBSvideoOut">
+            <summary>
+            Demonstrates how to initialize and use the GHI VideoOut Module using plain NETMF, avoiding Gadgeteer entirely.
+            This example assumes that a FEZ Cobra II is connected to the VideoOut Module and that 800x600 VGA output is desired.
+            See comments if using a different platform or resolution.
+            </summary>
+        </member>
+        <member name="M:VideoOutModulePlainNETMF.RGBSvideoOut.LCDConfig400x240VideoOutModuleCompatible">
+            <summary>
+            Configures LCD RGB sockets to be compatible with  the GHI VideoOut Module.
+            These settings were acquired by first using a Gadgeteer project to initialize the VideoOut Module at a resolution of 800x600 VGA.
+            The persistent LCD settings that were automatically set by Gadgeteer was then extracted using GHI's FEZ Config tool, so that 
+            they can be reproduced here in plain NETMF. A similar reverse-engineering approach can be used if other resolutions are desired.
+            </summary>
+        </member>
+        <member name="M:VideoOutModulePlainNETMF.RGBSvideoOut.VideoOutConfigRGBS400x240">
+            <summary>
+            Transmits I2C commands to configure the VideoOut Module for VGA output at 800x600 resolution.
+            A Gadgeteer project was created to configure the VideoOut Module for 800x600 VGA output.
+            A logic analyzer then snooped on the I2C data being sent to the VideoOut Module as it was being initialized.
+            A similar approach can be used to capture the configuration data needed to initialize the VideoOut Module
+            if other resolutions or output formats are desired.
+            </summary>
+        </member>
+    </members>
+</doc>
