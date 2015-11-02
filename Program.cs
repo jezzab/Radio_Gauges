@@ -171,10 +171,7 @@ namespace NETMFBook1
             Gauge4.Bitmap = new Bitmap(Resources.GetBytes(Resources.BinaryResources.GaugeSmall), Bitmap.BitmapImageType.Gif);
             Image Gauge5 = (Image)window.GetChildByName("gauge5");
             Gauge5.Bitmap = new Bitmap(Resources.GetBytes(Resources.BinaryResources.GaugeSmall), Bitmap.BitmapImageType.Gif);
-
-            LCD.DrawRectangle(Colors.White, 1, 0, 0, 300, 80, 0, 0, 0, 0, 0, 0, 0, 0, 100);
-
-            
+  
             //Setup the bitmaps
             Debug.Print("Loading bitmaps...");
             Bitmap centerbig = new Bitmap(Resources.GetBytes(Resources.BinaryResources.center), Bitmap.BitmapImageType.Gif);
