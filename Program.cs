@@ -120,17 +120,18 @@ namespace NETMFBook1
             Debug.Print("Setting RGBS Output and Pixel Clocks on Chrontel 7026B DAC...");
             VideoOutModulePlainNETMF.RGBSvideoOut.SetDisplayConfig();
 
-            //Setup the CAN bus timings. Tazzie is the man for GMLAN timing settings
-            GHI.IO.ControllerAreaNetwork.Timings Timings = new ControllerAreaNetwork.Timings(0, 0xF, 0x8, 0x4B, 1);
-            var can1 = new ControllerAreaNetwork(ControllerAreaNetwork.Channel.One, Timings);
+            //Setup the CAN bus timings. Tazzie is the man for GMLAN/HSCAN timing settings
+            GHI.IO.ControllerAreaNetwork.Timings GMLANTimings = new ControllerAreaNetwork.Timings(0, 0xF, 0x8, 0x4B, 1);
+            GHI.IO.ControllerAreaNetwork.Timings HSCANTimings = new ControllerAreaNetwork.Timings(0, 14, 5, 10, 1);
+            var can1 = new ControllerAreaNetwork(ControllerAreaNetwork.Channel.One, GMLANTimings);
             var can2 = new ControllerAreaNetwork(ControllerAreaNetwork.Channel.Two, ControllerAreaNetwork.Speed.Kbps500);
 
-            //CAN Bus Explicit Filters
+            //CAN Bus Explicit Filtersx
             uint[] filter1 = {0x102F8080};                      //GMLAN
             uint[] filter2 = {0xC9, 0x4C1, 0x3FB};              //HSCAN
             //uint[] filter2 = { 0xC9, 0x4C1, 0x1E5, 0x1E9 };   //HSCAN
             
-            //Set screen width
+            //Set screen dimensions
             int videoOutWidth = 395;
             int videoOutHeight = 240;
             Debug.Print("Setting up blank bitmap output container...");
@@ -220,6 +221,16 @@ namespace NETMFBook1
             PingNav.Length = 2;
             PingNav.IsExtendedId = true;
 
+            //HSCAN Test Packet with new Timings
+            /*
+            ControllerAreaNetwork.Message TestHSCAN = new ControllerAreaNetwork.Message();
+            TestHSCAN.ArbitrationId = 0x123;
+            TestHSCAN.Data = new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08 };
+            TestHSCAN.Length = 8;
+            TestHSCAN.IsExtendedId = false;
+            can2.SendMessage(TestHSCAN);
+            */
+            
             //send it the first time to fire things up if S1
             if(IsS1)
                 can1.SendMessage(PingNav);
