@@ -11,6 +11,11 @@
             See comments if using a different platform or resolution.
             </summary>
         </member>
+        <member name="M:VideoOutModulePlainNETMF.RGBSvideoOut.SetDisplayConfig">
+            <summary>
+            Set display config
+            </summary>
+        </member>
         <member name="M:VideoOutModulePlainNETMF.RGBSvideoOut.LCDConfig400x240VideoOutModuleCompatible">
             <summary>
             Configures LCD RGB sockets to be compatible with  the GHI VideoOut Module.

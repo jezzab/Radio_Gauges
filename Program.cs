@@ -54,8 +54,7 @@ namespace NETMFBook1
         private static Image Gauge4;
         private static Image Gauge5;
         private static Image Bar1;
-
-
+        
         static Window window = GlideLoader.LoadWindow(Resources.GetString(Resources.StringResources.window));
         static ControllerAreaNetwork.Message received = null;
         static string data = string.Empty;
@@ -82,6 +81,8 @@ namespace NETMFBook1
         public static int oldMAP = 0;
         public static int ETH;
         public static int oldETH = -1;
+        public static int SPKAdv;
+        public static int oldSPKAdv = -1;
         public static bool touchedOn = false;
         public static bool touchedOff = false;
         public static bool firstrun = true;
@@ -91,7 +92,7 @@ namespace NETMFBook1
         public static long[] LastTime = new long[8];
         public static int UpdateRate = 25;              //Rate to update the display/drop frames
         public static int RPMTime;
-        public static int x, y;
+        public static int x, y;                         //gauge X Y position
 
         public static void Main()
         {
@@ -128,7 +129,7 @@ namespace NETMFBook1
 
             //CAN Bus Explicit Filtersx
             uint[] filter1 = {0x102F8080};                      //GMLAN
-            uint[] filter2 = {0xC9, 0x4C1, 0x3FB};              //HSCAN
+            uint[] filter2 = {0xC9, 0x4C1, 0x3FB, 0x7E8};       //HSCAN
             //uint[] filter2 = { 0xC9, 0x4C1, 0x1E5, 0x1E9 };   //HSCAN
             
             //Set screen dimensions
@@ -204,8 +205,8 @@ namespace NETMFBook1
 
             //Setup CAN Events, enable CAN and Filters
             Debug.Print("Enabling HSCAN and GMLAN...");
-            can1.ErrorReceived += can_ErrorReceived;
-            can2.ErrorReceived += can_ErrorReceived;
+            //can1.ErrorReceived += can_ErrorReceived;
+            //can2.ErrorReceived += can_ErrorReceived;
             can1.MessageAvailable += can1_MessageAvailable;
             can2.MessageAvailable += can2_MessageAvailable;
             can1.Enabled = true;
@@ -221,15 +222,15 @@ namespace NETMFBook1
             PingNav.Length = 2;
             PingNav.IsExtendedId = true;
 
-            //HSCAN Test Packet with new Timings
-            /*
-            ControllerAreaNetwork.Message TestHSCAN = new ControllerAreaNetwork.Message();
-            TestHSCAN.ArbitrationId = 0x123;
-            TestHSCAN.Data = new byte[] { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08 };
-            TestHSCAN.Length = 8;
-            TestHSCAN.IsExtendedId = false;
-            can2.SendMessage(TestHSCAN);
-            */
+            //Request Spark Advane PID Test
+
+            ControllerAreaNetwork.Message reqSpark = new ControllerAreaNetwork.Message();
+            reqSpark.ArbitrationId = 0x7DF;
+            reqSpark.Data = new byte[] { 0x02, 0x01, 0x0E, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA };
+            reqSpark.Length = 8;
+            reqSpark.IsExtendedId = false;
+            can2.SendMessage(reqSpark);
+            
             
             //send it the first time to fire things up if S1
             if(IsS1)
@@ -260,7 +261,9 @@ namespace NETMFBook1
                     Gauge1.Bitmap.Flush();
                     Gauge1.Bitmap.DrawLine(Colors.Red, 1, 75, 75, x, y);
                     Gauge1.Bitmap.DrawImage(65, 65, centerbig, 0, 0, 18, 18);
+                    //DrawBar(RPM, 8000, 50, 112, 10, 100, Gauge1.Bitmap);          //Unremark to draw new bars [RPM is slow due to precision and size of bar]
                     Gauge1.Invalidate();
+                  /*
                     if (((TimeNow[ModuleTimers.RPM] - LastTime[ModuleTimers.RPM]) / TimeSpan.TicksPerMillisecond) > UpdateRate)
                     {
                         //Drop frames to free up the CAN controller. Too much data
@@ -271,6 +274,7 @@ namespace NETMFBook1
                     {
                         TimeNow[ModuleTimers.RPM] = System.DateTime.Now.Ticks;
                     }
+                   */
                 }
                 if (oldTPS != TPS)
                 {
@@ -281,7 +285,9 @@ namespace NETMFBook1
                     Gauge2.Bitmap.Flush();
                     Gauge2.Bitmap.DrawLine(Colors.Red, 1, 75, 75, x, y);
                     Gauge2.Bitmap.DrawImage(65, 65, centerbig, 0, 0, 18, 18);           //spindle/knob image: start point xy + 65px
+                    //DrawBar(TPS, 100, 50, 112, 10, 100, Gauge2.Bitmap);               //Unremark to draw new bars [TPS is fine]
                     Gauge2.Invalidate();
+                    /*
                     if (((TimeNow[ModuleTimers.TPS] - LastTime[ModuleTimers.TPS]) / TimeSpan.TicksPerMillisecond) > UpdateRate)
                     {
                         //Drop frames to free up the CAN controller. Too much data
@@ -292,6 +298,7 @@ namespace NETMFBook1
                     {
                         TimeNow[ModuleTimers.TPS] = System.DateTime.Now.Ticks;
                     }
+                     */
                 }
                 if (oldECT != ECT)
                 {
@@ -328,6 +335,11 @@ namespace NETMFBook1
                     Gauge5.Bitmap.DrawLine(Colors.Red, 1, 40, 40, x, y);
                     Gauge5.Bitmap.DrawImage(36, 35, centersmall, 0, 0, 12, 12);
                     Gauge5.Invalidate();
+                }
+                if (oldSPKAdv != SPKAdv)
+                {
+                    Debug.Print("Spark Adv: " + SPKAdv);
+                    can2.SendMessage(reqSpark);
                 }
                 /*
                 if (oldSWA != SWA)
@@ -433,6 +445,7 @@ namespace NETMFBook1
                     oldYaw = Yaw;
                     oldMAP = MAP;
                     oldETH = ETH;
+                    oldSPKAdv = SPKAdv;
                     firstrun = false;
                 }
                 if (received.ArbitrationId == 0x3FB)
@@ -468,11 +481,14 @@ namespace NETMFBook1
                     LatAccel = received.Data[0] / 64;       //metres per sec acceleration
                     //LatAccel = LatAccel / 9.8067;         //1 Gforce = 9.80665m/sec acceleration
                 }
+                if (received.ArbitrationId == 0x7E8)
+                    if(received.Data[2] == 0xE)
+                        SPKAdv = (received.Data[3] / 2) - 64;
             }
         }
     private static void can_ErrorReceived(ControllerAreaNetwork sender, ControllerAreaNetwork.ErrorReceivedEventArgs e)
     {
-       // Debug.Print("Error on CAN: " + e.Error.ToString());
+        Debug.Print("Error on CAN: " + e.Error.ToString());
     }
     private static void btn1_PressEvent(object sender)
     {
@@ -503,18 +519,38 @@ namespace NETMFBook1
             startpointX += 40;                              //center point
             startpointY += 40;                              //center point
         }
-        double point;
-        point = (double)data / ((double)max / 245);         //245deg max sweep max=max units (step size calc)
+        float point;
+        point = (float)data / ((float)max / 245);         //245deg max sweep max=max units (step size calc)
                                                             //short needle for small gauge
-        double angle = 153 + point;                         //153deg is start point angle
-        double radians;
+        float angle = 153 + point;                         //153deg is start point angle
+        float radians;
         if (angle > 360)
             angle -= 360;
-        radians = angle * System.Math.PI / 180;
+        radians = angle * (float)System.Math.PI / 180;
         x =  (int)(length * System.Math.Cos(radians));      //eyes glazed over, answer comes out.....
         y =  (int)(length * System.Math.Sin(radians));
         x += startpointX;                                   //center point
         y += startpointY;                                   //center point
+    }
+    public static void DrawBar(int data, int max, int startpointX, int startpointY, int height, int width, Bitmap gauge)
+    {
+        int endpointY = (startpointY+height);
+        float barpositionx;
+        float stepsize = (float)width / (float)max;
+        float endx = ((float)data * stepsize) + startpointX;
+
+        if (data != 0)
+        {
+            for (barpositionx = startpointX; barpositionx < endx; barpositionx += stepsize)
+            {
+                if (barpositionx < endx)
+                {
+                    gauge.DrawLine(Colors.Green, 1, (int)barpositionx, startpointY, (int)barpositionx, endpointY);
+                }
+                else
+                    gauge.DrawLine(Colors.Black, 1, (int)barpositionx, startpointY, (int)barpositionx, endpointY);
+            }
+        }
     }
   }
 }
