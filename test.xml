@@ -6,4 +6,6 @@
     <Image Name="gauge4" X="142" Y="140" Width="80" Height="80" Alpha="255"/>
     <Image Name="gauge5" X="285" Y="140" Width="80" Height="80" Alpha="255"/>
   </Window>
+  <Window Name="window2" Width="395" Height="240" BackColor="000000">
+  </Window>
 </Glide>

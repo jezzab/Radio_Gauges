@@ -43,7 +43,7 @@ namespace NETMFBook1
             centersmall = -27029,
             center = -7693,
             GaugeSmall = 2307,
-            GaugeBig = 28450,
+            bar_mask = 10975,
         }
         [System.SerializableAttribute()]
         internal enum FontResources : short
@@ -57,6 +57,7 @@ namespace NETMFBook1
         internal enum StringResources : short
         {
             String1 = 1228,
+            window2 = 21005,
             window = 27311,
         }
     }

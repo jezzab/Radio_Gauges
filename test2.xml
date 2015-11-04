@@ -1,0 +1,6 @@
+<Glide Version="1.0.7">
+  <Window Name="window2" Width="395" Height="240" BackColor="000000">
+    <Image Name="bar1" X="0" Y="0" Width="395" Height="50" Alpha="255"/>
+    <Image Name="bar2" X="0" Y="70" Width="395" Height="50" Alpha="255"/>
+  </Window>
+</Glide>

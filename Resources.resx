@@ -127,9 +127,6 @@
   <data name="window" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>test.xml;System.String, mscorlib, Version=4.3.1.0, Culture=neutral, PublicKeyToken=null;Windows-1252</value>
   </data>
-  <data name="GaugeBig" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>images\gaugebig.gif;System.Byte[], mscorlib, Version=4.3.1.0, Culture=neutral, PublicKeyToken=null</value>
-  </data>
   <data name="centersmall" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>images\centersmall.gif;System.Byte[], mscorlib, Version=4.3.1.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
@@ -147,5 +144,11 @@
   </data>
   <data name="small" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>font\small.tinyfnt;System.Byte[], mscorlib, Version=4.3.1.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="window2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>test2.xml;System.String, mscorlib, Version=4.3.1.0, Culture=neutral, PublicKeyToken=null;Windows-1252</value>
+  </data>
+  <data name="bar_mask" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>images\bar_mask.gif;System.Byte[], mscorlib, Version=4.3.1.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
 </root>

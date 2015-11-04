@@ -29,7 +29,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject />
+    <StartupObject>
+    </StartupObject>
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
@@ -45,12 +46,16 @@
     <Reference Include="GHI.Glide, Version=4.3.7.10, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="GHI.Hardware, Version=4.3.7.10, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="GHI.Pins, Version=4.3.7.10, Culture=neutral, processorArchitecture=MSIL" />
+    <Reference Include="GHI.Usb, Version=4.3.7.10, Culture=neutral, processorArchitecture=MSIL" />
+    <Reference Include="GTM.GHIElectronics.USBHost, Version=4.3.7.10, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.SPOT.Graphics" />
     <Reference Include="Microsoft.SPOT.Hardware" />
+    <Reference Include="Microsoft.SPOT.IO" />
     <Reference Include="Microsoft.SPOT.Native">
     </Reference>
     <Reference Include="Microsoft.SPOT.TinyCore" />
     <Reference Include="Microsoft.SPOT.Touch" />
+    <Reference Include="System.IO" />
     <Reference Include="VideoOutModulePlainNETMF">
       <HintPath>Drivers\VideoOutModulePlainNETMF.dll</HintPath>
     </Reference>
@@ -72,11 +77,14 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Images\bar_mask.gif" />
     <Content Include="Images\center.gif" />
     <Content Include="Images\centersmall.gif" />
-    <Content Include="Images\GaugeBig.gif" />
     <Content Include="Images\GaugeSmall.gif" />
     <Content Include="Images\gaugetest.jpg" />
     <Content Include="Images\needle.gif" />
+    <Content Include="test2.xml">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
 </Project>
