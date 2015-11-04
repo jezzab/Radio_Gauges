@@ -361,11 +361,11 @@ namespace NETMFBook1
             //Run forever. 100 miles and running [NWA FTW]......
             while (true)
             {
-                RPM += 50;
-                TPS += 1;
-                ECT += 1;
-                IAT += 1;
-                ETH += 1;
+                //RPM += 50;
+                //TPS += 1;
+                //ECT += 1;
+                //IAT += 1;
+                //ETH += 1;
 
                 //Change screens using slide if button clicked
                 if(BarGraph == true)
