@@ -120,10 +120,11 @@ namespace NETMFBook1
             Controller.MassStorageConnected += (sender, massStorage) =>
             {
                 usb_storage = massStorage;
-                usb_storage.Mount();        //Fires the USB insert event when finished
+                usb_storage.Mount();                            //Fires the USB insert event when finished
             };
             Controller.Start();
-            evt.WaitOne();                  //Wait here until mounting and initializing is finished
+            Debug.Print("Waiting for USB insertion...");
+            evt.WaitOne();                                      //Wait here until mounting and initializing is finished
 
             FileStream fileHandle = new FileStream(rootDirectory + @"\GaugeBig.gif", FileMode.Open, FileAccess.Read);
             byte[] data = new byte[fileHandle.Length];
@@ -149,6 +150,7 @@ namespace NETMFBook1
             LastTime[6] = System.DateTime.Now.Ticks;
             LastTime[7] = System.DateTime.Now.Ticks;
             LastTime[8] = System.DateTime.Now.Ticks;
+            Tween.NumSteps.SlideWindow = 25;
 
             if (IsS1)
                 Debug.Print("Radio is a S1");
@@ -294,12 +296,20 @@ namespace NETMFBook1
             while (true)
             {
                 if(BarGraph == true)
-                    if(Glide.MainWindow == window)
-                        Glide.MainWindow = window2;
+                    if (Glide.MainWindow == window)
+                    {
+                        Tween.SlideWindow(window, window2, Direction.Left);
+                       // Glide.MainWindow = window2;
+                    }
+                    else { }
                 
                 if(BarGraph == false)
-                    if(Glide.MainWindow == window2)
-                        Glide.MainWindow = window;
+                    if (Glide.MainWindow == window2)
+                    {
+                        Tween.SlideWindow(window2, window, Direction.Right);
+                       // Glide.MainWindow = window;
+                    }
+                    else { }
 
                 ///autoswitch display based on time
                 /*
@@ -336,10 +346,11 @@ namespace NETMFBook1
                 {
                     if (BarGraph == true)
                     {
-                        DrawBar(RPM, 8000, 0, 10, 39, 352, Bar1.Bitmap);               //Unremark to draw new bars [TPS is fine]
+                        DrawBar(RPM, 8000, 0, 4, 46, 352, Bar1.Bitmap);               //Unremark to draw new bars [TPS is fine]
                         Bar1.Bitmap.Flush();
                         Bar1.Bitmap.DrawImage(0, 0, bar_mask, 0, 0, 350, 50);
                         Bar1.Bitmap.DrawText("RPM", smallfont, Colors.White, 0, 0);
+                        Bar1.Bitmap.DrawText("" + RPM, smallfont, Colors.White, 0, 15);
                         Bar1.Invalidate();
                     }
                     else
@@ -359,10 +370,11 @@ namespace NETMFBook1
                 {
                     if (BarGraph == true)
                     {
-                        DrawBar(TPS, 100, 0, 10, 39, 352, Bar2.Bitmap);               //Unremark to draw new bars [TPS is fine]
+                        DrawBar(TPS, 100, 0, 4, 46, 352, Bar2.Bitmap);               //Unremark to draw new bars [TPS is fine]
                         Bar2.Bitmap.Flush();
                         Bar2.Bitmap.DrawImage(0, 0, bar_mask, 0, 0, 350, 50);
                         Bar2.Bitmap.DrawText("TPS", smallfont, Colors.White, 0, 0);
+                        Bar2.Bitmap.DrawText("" + TPS, smallfont, Colors.White, 0, 15);
                         Bar2.Invalidate();
                     }
                     else
@@ -673,7 +685,8 @@ namespace NETMFBook1
            // if (data != 0)
            // {
 
-                gauge.DrawRectangle(Colors.White, 0, startpointX, startpointY, (int)endx, height, 0, 0, Colors.Green, startpointX, startpointY, Colors.Red, (int)endx, height, 65535);
+                //gauge.DrawRectangle(Colors.White, 0, startpointX, startpointY, (int)endx, height, 0, 0, Colors.Green, startpointX, startpointY, Colors.Red, (int)endx, height, 65535);
+                gauge.DrawRectangle(Colors.White, 0, startpointX, startpointY, width, height, 0, 0, Colors.Green, startpointX, (height/2), Colors.Red, width, (height/2), 65535);
                 gauge.DrawRectangle(Colors.White, 0, (int)endx, startpointY, width - (int)endx, height, 0, 0, Colors.Black, startpointX, startpointY, Colors.Black, width, height, 65535);
                 gauge.Flush();
            // }
