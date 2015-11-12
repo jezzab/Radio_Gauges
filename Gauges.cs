@@ -423,12 +423,12 @@ namespace NETMFBook1
 
                 Needlepoint = (float)_CurrentValue / ((float)_MaxValue / 245);         //245deg max sweep max=max units (step size calc)
                 //short needle for small gauge
-                float angle = 149 + Needlepoint;                         //153deg is start point angle
+                float angle = 149 + Needlepoint;                                       //153deg is start point angle
                 float radians;
                 if (angle > 360)
                     angle -= 360;
                 radians = angle * (float)System.Math.PI / 180;
-                NeedleEndx = (int)(Needlelength * System.Math.Cos(radians));      //eyes glazed over, answer comes out.....
+                NeedleEndx = (int)(Needlelength * System.Math.Cos(radians));      //[Jez]eyes glazed over, answer comes out.....
                 NeedleEndy = (int)(Needlelength * System.Math.Sin(radians));
                 NeedleEndx += NeedlestartpointX;                                   //center point
                 NeedleEndy += NeedlestartpointY;                                   //center point

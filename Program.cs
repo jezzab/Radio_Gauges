@@ -42,32 +42,10 @@ namespace NETMFBook1
     public partial class App
     {
         //Setup XML to Object stuff
-        private static TextBox txtRPM;
-        private static TextBlock lblRPM;
-        private static TextBox txtIAT;
-        private static TextBlock lblIAT;
-        private static TextBox txtECT;
-        private static TextBlock lblECT;
-        private static TextBox txtMAP;
-        private static TextBlock lblMAP;
-        private static TextBox txtTPS;
-        private static TextBlock lblTPS;
-        private static TextBox txtSWA;
-        private static TextBlock lblSWA;
-        private static TextBox txtYaw;
-        private static TextBlock lblYaw;
-        private static TextBox txtLatAccel;
-        private static TextBlock lblLatAccel;
-        private static Image Gauge1;
-        private static Image Gauge2;
-        private static Image Gauge3;
-        private static Image Gauge4;
-        private static Image Gauge5;
         private static Image Bar1;
         private static Image Bar2;
 
         //Load up windows
-        static Window window = GlideLoader.LoadWindow(Resources.GetString(Resources.StringResources.window));
         static Window window2 = GlideLoader.LoadWindow(Resources.GetString(Resources.StringResources.window2));
 
         public static AutoResetEvent evt = new AutoResetEvent(false);
@@ -112,9 +90,6 @@ namespace NETMFBook1
         public static int RPMTime;
         public static int x, y;                         //gauge X Y position
         public static bool BarGraph = false;            //set default display screen
-
-
-
 
         public static void Main()
         {   
@@ -184,53 +159,16 @@ namespace NETMFBook1
             Debug.Print("Setting up blank bitmap output container...");
             Bitmap LCD = new Bitmap(videoOutWidth, videoOutHeight); // This empty Bitmap object will be our output container
             Debug.Print("Displaying Glide Loading message...");
-            Window window = new Window("window1", 600, 600);//GlideLoader.LoadWindow(Resources.GetString(Resources.StringResources.window)); //
+            Window window = new Window("window1", 395, 240);
             window.BackColor = Microsoft.SPOT.Presentation.Media.Color.Black;
             Window window2 = GlideLoader.LoadWindow(Resources.GetString(Resources.StringResources.window2));
             Debug.Print("Setting up Glide Touch system...");
             GlideTouch.Initialize();
 
-               
-     
-
-      
-
-
-
-            //Convert our Glide XML to variables
-            Button btn1 = (Button)window.GetChildByName("btn1");
-            Button btn2 = (Button)window.GetChildByName("btn2");
-            Button btn3 = (Button)window.GetChildByName("btn3");
-            txtRPM = (TextBox)window.GetChildByName("txtRPM");
-            lblRPM = (TextBlock)window.GetChildByName("lblRPM");
-            txtIAT = (TextBox)window.GetChildByName("txtIAT");
-            lblIAT = (TextBlock)window.GetChildByName("lblIAT");
-            txtECT = (TextBox)window.GetChildByName("txtECT");
-            lblECT = (TextBlock)window.GetChildByName("lblECT");
-            txtMAP = (TextBox)window.GetChildByName("txtMAP");
-            lblMAP = (TextBlock)window.GetChildByName("lblMAP");
-            txtTPS = (TextBox)window.GetChildByName("txtTPS");
-            lblTPS = (TextBlock)window.GetChildByName("lblTPS");
-            txtSWA = (TextBox)window.GetChildByName("txtSWA");
-            lblSWA = (TextBlock)window.GetChildByName("lblSWA");
-            txtYaw = (TextBox)window.GetChildByName("txtYaw");
-            lblYaw = (TextBlock)window.GetChildByName("lblYaw");
-            txtLatAccel = (TextBox)window.GetChildByName("txtLatAccel");
-            lblLatAccel = (TextBlock)window.GetChildByName("lblLatAccel");
-
-
-            //window.AddChild(AnaGauge1);
-            //Glide.MainWindow = window;
-
-            //   while (true)
-            //   {
-            //       AnaGauge1.Value += 1;
-            //       Thread.Sleep(150);
-            //   }
             Canvas Border = new Canvas();
             window.AddChild(Border);
-            Border.DrawRectangle(Colors.Red, 1, 5, 10, 370, 205, 0, 0, Colors.White, 6500, 6500, Colors.White, 6500, 6500, 0);
-            
+            //Border.DrawRectangle(Colors.Red, 1, 5, 10, 370, 205, 0, 0, Colors.White, 6500, 6500, Colors.White, 6500, 6500, 0);    //IQ 
+            Border.DrawRectangle(Colors.Red, 1, 5, 10, 370, 205, 0, 0, Colors.White, 6500, 6500, Colors.White, 6500, 6500, 0);      //S1
             
             int StartX1 = 0x27;
             int StartY1 = 0x8;
@@ -261,19 +199,6 @@ namespace NETMFBook1
             AnaGauge5.MaxValue = 100;
             AnaGauge5.Value = 0;
 
-         ///   dataSmallDial
-
-        //    Image Gauge1 = (Image)window.GetChildByName("gauge1");
-         //   Gauge1.Bitmap = new Bitmap(data, Bitmap.BitmapImageType.Gif);
-            
-            //Image Gauge2 = (Image)window.GetChildByName("gauge2");
-            //Gauge2.Bitmap = new Bitmap(data, Bitmap.BitmapImageType.Gif);
-            //Image Gauge3 = (Image)window.GetChildByName("gauge3");
-            //Gauge3.Bitmap = new Bitmap(Resources.GetBytes(Resources.BinaryResources.GaugeSmall), Bitmap.BitmapImageType.Gif);
-            //Image Gauge4 = (Image)window.GetChildByName("gauge4");
-            //Gauge4.Bitmap = new Bitmap(Resources.GetBytes(Resources.BinaryResources.GaugeSmall), Bitmap.BitmapImageType.Gif);
-            //Image Gauge5 = (Image)window.GetChildByName("gauge5");
-            //Gauge5.Bitmap = new Bitmap(Resources.GetBytes(Resources.BinaryResources.GaugeSmall), Bitmap.BitmapImageType.Gif);
             Image Bar1 = (Image)window2.GetChildByName("bar1");
             Bar1.Bitmap = new Bitmap(Bar1.Width, Bar1.Height);
             Image Bar2 = (Image)window2.GetChildByName("bar2");
@@ -281,11 +206,6 @@ namespace NETMFBook1
 
             //Setup the bitmaps
             Debug.Print("Loading bitmaps...");
-           // Bitmap centerbig = new Bitmap(Resources.GetBytes(Resources.BinaryResources.center), Bitmap.BitmapImageType.Gif);
-          //  Bitmap centersmall = new Bitmap(Resources.GetBytes(Resources.BinaryResources.centersmall), Bitmap.BitmapImageType.Gif);
-            //Bitmap biggauge = new Bitmap(Resources.GetBytes(Resources.BinaryResources.GaugeBig), Bitmap.BitmapImageType.Gif);
-          //  Bitmap biggauge = new Bitmap(dataLargeDial, Bitmap.BitmapImageType.Gif);
-          //  Bitmap smallgauge = new Bitmap(dataSmallDial, Bitmap.BitmapImageType.Gif);
             Bitmap bar_mask = new Bitmap(Resources.GetBytes(Resources.BinaryResources.bar_mask), Bitmap.BitmapImageType.Gif);
 
             //Setup the fonts
@@ -297,17 +217,9 @@ namespace NETMFBook1
 
             //Draw the screen the first time
             Debug.Print("Drawing gauges and labels...");
-        //    Gauge1.Bitmap.DrawImage(0, 0, biggauge, 0, 0, 150, 150);
-         //   Gauge1.Bitmap.DrawText("RPM", bigfont, Colors.Black, 62, 85);
-            //Gauge2.Bitmap.DrawImage(0, 0, biggauge, 0, 0, 150, 150);
-            //Gauge2.Bitmap.DrawText("TPS", bigfont, Colors.Black, 62, 85);
-           // Gauge3.Bitmap.DrawImage(0, 0, smallgauge, 0, 0, 80, 80);
-           // Gauge4.Bitmap.DrawImage(0, 0, smallgauge, 0, 0, 80, 80);
-           // Gauge5.Bitmap.DrawImage(0, 0, smallgauge, 0, 0, 80, 80);
 
             Bar1.Bitmap.DrawText("RPM", smallfont, Colors.White, 0, 0);
             Bar2.Bitmap.DrawText("TPS", smallfont, Colors.White, 0, 0);
-
 
             //Setup CAN Events, enable CAN and Filters
             Debug.Print("Enabling HSCAN and GMLAN...");
@@ -321,18 +233,12 @@ namespace NETMFBook1
             can2.SetExplicitFilters(filter2);
             Debug.Print("CAN and Filters Enabled");
 
-          
-            
-            
             //Define the Nav Enable packet for S1 Radio
             ControllerAreaNetwork.Message PingNav = new ControllerAreaNetwork.Message();
             PingNav.ArbitrationId = 0x102E2094;
             PingNav.Data = new byte[] { 0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
             PingNav.Length = 2;
             PingNav.IsExtendedId = true;
-
-
-            
             
             //Request Spark Advane PID Test
             ControllerAreaNetwork.Message reqSpark = new ControllerAreaNetwork.Message();
@@ -341,9 +247,6 @@ namespace NETMFBook1
             reqSpark.Length = 8;
             reqSpark.IsExtendedId = false;
             can2.SendMessage(reqSpark);
-
-
-
 
             //send it the first time to fire things up if S1
             if (IsS1) can1.SendMessage(PingNav);
@@ -354,10 +257,6 @@ namespace NETMFBook1
                 Glide.MainWindow = window2;
             Debug.Print("Program Started");
           
-            
-            
-            
-            
             //Run forever. 100 miles and running [NWA FTW]......
             while (true)
             {
@@ -367,17 +266,14 @@ namespace NETMFBook1
                 //IAT += 1;
                 //ETH += 1;
 
-                //Change screens using slide if button clicked
+                //Change screens using slide if button pressed
                 if(BarGraph == true)
                     if (Glide.MainWindow == window) { Tween.SlideWindow(window, window2, Direction.Left); }
                      else { }
                 
                 if(BarGraph == false)
                     if (Glide.MainWindow == window2){Tween.SlideWindow(window2, window, Direction.Right);}
-                       
                     else { }
-
-
 
                 if (IsS1) //NAV
                 {
@@ -406,17 +302,9 @@ namespace NETMFBook1
                     else
                     {
                         AnaGauge1.Value = RPM;
-                        //////////FindPoint(RPM, 8000, 0, 0, true);
-                        //////////Gauge1.Bitmap.DrawImage(0, 0, biggauge, 0, 0, 150, 150);
-                        //////////Gauge1.Bitmap.DrawText("RPM", bigfont, Colors.Black, 62, 85);
-                        //////////Gauge1.Bitmap.DrawText("" + RPM, digitalfont_big, Colors.White, 62, 98);
-                        //////////Gauge1.Bitmap.Flush();
-                        //////////Gauge1.Bitmap.DrawLine(Colors.Red, 1, 75, 75, x, y);
-                        //////////Gauge1.Bitmap.DrawImage(65, 65, centerbig, 0, 0, 18, 18);
-                       // DrawBar(RPM, 8000, 50, 112, 10, 100, Gauge1.Bitmap);          //Unremark to draw new bars [RPM is slow due to precision and size of bar]
-                        //////////Gauge1.Invalidate();
                     }
                 }
+
                 if (oldTPS != TPS)
                 {
                     if (BarGraph == true)
@@ -431,16 +319,9 @@ namespace NETMFBook1
                     else
                     {
                         AnaGauge2.Value = TPS;
-                        //////////FindPoint(TPS, 100, 0, 0, true);
-                        //////////Gauge2.Bitmap.DrawImage(0, 0, biggauge, 0, 0, 150, 150);
-                        //////////Gauge2.Bitmap.DrawText("TPS", bigfont, Colors.Black, 62, 85);
-                        //////////Gauge2.Bitmap.DrawText("" + TPS + "%", digitalfont_big, Colors.White, 62, 98);
-                        //////////Gauge2.Bitmap.Flush();
-                        //////////Gauge2.Bitmap.DrawLine(Colors.Red, 1, 75, 75, x, y);
-                        //////////Gauge2.Bitmap.DrawImage(65, 65, centerbig, 0, 0, 18, 18);           //spindle/knob image: start point xy + 65px
-                        //////////Gauge2.Invalidate();
                     }
                 }
+
                 if (oldECT != ECT)
                 {
                     if (BarGraph == true)
@@ -448,17 +329,9 @@ namespace NETMFBook1
                     else
                     {
                         AnaGauge3.Value = ECT;
-                        //Debug.Print("ECT: " + ECT);
-                        ////////////FindPoint(ECT, 140, 0, 0, false);
-                        ////////////Gauge3.Bitmap.DrawImage(0, 0, smallgauge, 0, 0, 80, 80);
-                        ////////////Gauge3.Bitmap.DrawText("ECT", smallfont, Colors.Black, 30, 41);
-                        ////////////Gauge3.Bitmap.DrawText("" + ECT, digitalfont_small, Colors.White, 34, 53);
-                        ////////////Gauge3.Bitmap.Flush();
-                        ////////////Gauge3.Bitmap.DrawLine(Colors.Red, 1, 40, 40, x, y);
-                        ////////////Gauge3.Bitmap.DrawImage(36, 35, centersmall, 0, 0, 12, 12);
-                        ////////////Gauge3.Invalidate();
                     }
                 }
+
                 if (oldIAT != IAT)
                 {
                     if (BarGraph == true)
@@ -466,17 +339,9 @@ namespace NETMFBook1
                     else
                     {
                         AnaGauge4.Value = IAT;
-                        ////////////Debug.Print("IAT: " + IAT);
-                        //////////FindPoint(IAT, 100, 0, 0, false);
-                        //////////Gauge4.Bitmap.DrawImage(0, 0, smallgauge, 0, 0, 80, 80);
-                        //////////Gauge4.Bitmap.DrawText("IAT", smallfont, Colors.Black, 30, 41);
-                        //////////Gauge4.Bitmap.DrawText("" + IAT, digitalfont_small, Colors.White, 34, 53);
-                        //////////Gauge4.Bitmap.Flush();
-                        //////////Gauge4.Bitmap.DrawLine(Colors.Red, 1, 40, 40, x, y);
-                        //////////Gauge4.Bitmap.DrawImage(36, 35, centersmall, 0, 0, 12, 12);
-                        //////////Gauge4.Invalidate();
                     }
                 }
+
                 if (oldETH != ETH)
                 {
                     if (BarGraph == true)
@@ -484,17 +349,9 @@ namespace NETMFBook1
                     else
                     {
                         AnaGauge5.Value = ETH;
-                        //////////Debug.Print("ETH: " + ETH);
-                        ////////FindPoint(ETH, 100, 0, 0, false);
-                        ////////Gauge5.Bitmap.DrawImage(0, 0, smallgauge, 0, 0, 80, 80);
-                        ////////Gauge5.Bitmap.DrawText("ETH", smallfont, Colors.Black, 30, 41);
-                        ////////Gauge5.Bitmap.DrawText("" + ETH + "%", digitalfont_small, Colors.White, 31, 53);
-                        ////////Gauge5.Bitmap.Flush();
-                        ////////Gauge5.Bitmap.DrawLine(Colors.Red, 1, 40, 40, x, y);
-                        ////////Gauge5.Bitmap.DrawImage(36, 35, centersmall, 0, 0, 12, 12);
-                        ////////Gauge5.Invalidate();
                     }
                 }
+
                 if (oldSPKAdv != SPKAdv)
                 {
 
@@ -560,14 +417,6 @@ namespace NETMFBook1
 
             }
         }
-
-
-
-
-
-
-
-
         private static void can1_MessageAvailable(ControllerAreaNetwork sender, ControllerAreaNetwork.MessageAvailableEventArgs e)
         {
             //Debug.Print("CAN1 IRQ Called");
@@ -666,20 +515,11 @@ namespace NETMFBook1
                         SPKAdv = (received.Data[3] / 2) - 64;
             }
         }
-      
-        
-        
         private static void can_ErrorReceived(ControllerAreaNetwork sender, ControllerAreaNetwork.ErrorReceivedEventArgs e)
         {
+            // This event is fired by unmount
             Debug.Print("Error on CAN: " + e.Error.ToString());
         }
-        
-
-
-
-
-
-        // This event is fired by unmount
         static void RemovableMedia_Eject(object sender, MediaEventArgs e)
         {
             Debug.Print("USB unmounted, eject event fired");
@@ -705,10 +545,6 @@ namespace NETMFBook1
             }
             evt.Set(); // proceed with other processing
         }
-
-
-
-
         private static void btn1_PressEvent(object sender)
         {
             Debug.Print("Button 1 tapped.");
@@ -723,56 +559,14 @@ namespace NETMFBook1
         {
             Debug.Print("Button 3 tapped.");
         }
-
-
-
-
-
-        //public static void FindPoint(int data, int max, int startpointX, int startpointY, bool longneedle)
-        //{
-        //    int length;
-        //    if (longneedle == true)
-        //    {
-        //        length = 46;                                    //needle length in px (long needle)
-        //        startpointX += 79;                              //center point
-        //        startpointY += 78;                              //center point
-        //    }
-        //    else
-        //    {
-        //        length = 27;
-        //        startpointX += 40;                              //center point
-        //        startpointY += 40;                              //center point
-        //    }
-        //    float point;
-        //    point = (float)data / ((float)max / 245);         //245deg max sweep max=max units (step size calc)
-        //    //short needle for small gauge
-        //    float angle = 153 + point;                         //153deg is start point angle
-        //    float radians;
-        //    if (angle > 360)
-        //        angle -= 360;
-        //    radians = angle * (float)System.Math.PI / 180;
-        //    x = (int)(length * System.Math.Cos(radians));      //eyes glazed over, answer comes out.....
-        //    y = (int)(length * System.Math.Sin(radians));
-        //    x += startpointX;                                   //center point
-        //    y += startpointY;                                   //center point
-        //}
-
-
-
         private static void DrawBar(int data, int max, int startpointX, int startpointY, int height, int width, Bitmap gauge)
         {
             int endpointY = (startpointY + height);
             float stepsize = (float)width / (float)max;
             float endx = ((float)data * stepsize);
-
-            // if (data != 0)
-            // {
-
-            //gauge.DrawRectangle(Colors.White, 0, startpointX, startpointY, (int)endx, height, 0, 0, Colors.Green, startpointX, startpointY, Colors.Red, (int)endx, height, 65535);
             gauge.DrawRectangle(Colors.White, 0, startpointX, startpointY, width, height, 0, 0, Colors.Green, startpointX, (height / 2), Colors.Red, width, (height / 2), 65535);
             gauge.DrawRectangle(Colors.White, 0, (int)endx, startpointY, width - (int)endx, height, 0, 0, Colors.Black, startpointX, startpointY, Colors.Black, width, height, 65535);
             gauge.Flush();
-            // }
         }
     }
 }
