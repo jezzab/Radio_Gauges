@@ -135,8 +135,7 @@ namespace NETMFBook1
             LastTime[8] = System.DateTime.Now.Ticks;
             Tween.NumSteps.SlideWindow = 25;
 
-            if (IsS1)
-                Debug.Print("Radio is a S1");
+            if (IsS1) Debug.Print("Radio is a S1");
 
             //Load Jezzas wicked RGBS DLL file and init the display and pixel clocks
             Debug.Print("Setting RGBS Output and Pixel Clocks on Chrontel 7026B DAC...");
@@ -161,9 +160,20 @@ namespace NETMFBook1
             Debug.Print("Displaying Glide Loading message...");
             Window window = new Window("window1", 395, 240);
             window.BackColor = Microsoft.SPOT.Presentation.Media.Color.Black;
-            Window window2 = GlideLoader.LoadWindow(Resources.GetString(Resources.StringResources.window2));
+            Window window2 = new Window("window2", 395, 240);//GlideLoader.LoadWindow(Resources.GetString(Resources.StringResources.window2));
             Debug.Print("Setting up Glide Touch system...");
             GlideTouch.Initialize();
+
+            //Setup the fonts
+            Debug.Print("Loading fonts...");
+            Font bigfont = Resources.GetFont(Resources.FontResources.NinaB);
+            Font smallfont = Resources.GetFont(Resources.FontResources.small);
+            Font digitalfont_big = Resources.GetFont(Resources.FontResources.digital7_14pt);
+            Font digitalfont_small = Resources.GetFont(Resources.FontResources.digital7_12pt);
+
+            //Setup the bitmaps
+            Debug.Print("Loading bitmaps...");
+            byte[] bar_mask = Resources.GetBytes(Resources.BinaryResources.bar_mask); //new Bitmap(Resources.GetBytes(Resources.BinaryResources.bar_mask), Bitmap.BitmapImageType.Gif);
 
             Canvas Border = new Canvas();
             window.AddChild(Border);
@@ -174,52 +184,51 @@ namespace NETMFBook1
             int StartY1 = 0x8;
             int StartX2 = 0x4;
             int StartY2 = 135;
-            Gauges.AnalogueGauge AnaGauge1 = new Gauges.AnalogueGauge(window, dataLargeDial, "AnaGauge1", "RPM", 255, StartX1, StartY1, true);
+            Gauges.AnalogueGauge AnaGauge1 = new Gauges.AnalogueGauge(window, dataLargeDial,digitalfont_small,digitalfont_big, "AnaGauge1", "RPM", 255, StartX1, StartY1, true);
             window.AddChild(AnaGauge1);
             AnaGauge1.MaxValue = 8000;
             AnaGauge1.Value = 0;
 
-            Gauges.AnalogueGauge AnaGauge2 = new Gauges.AnalogueGauge(window, dataLargeDial, "AnaGauge2", "TPS", 255,StartX1 + 147, StartY1, true);
+            Gauges.AnalogueGauge AnaGauge2 = new Gauges.AnalogueGauge(window, dataLargeDial, digitalfont_small, digitalfont_big, "AnaGauge2", "TPS", 255, StartX1 + 147, StartY1, true);
             window.AddChild(AnaGauge2);
             AnaGauge2.MaxValue = 100;
             AnaGauge2.Value = 0;
 
-            Gauges.AnalogueGauge AnaGauge3 = new Gauges.AnalogueGauge(window, dataSmallDial, "AnaGauge3", "ECT", 255, StartX2, StartY2, false);
+            Gauges.AnalogueGauge AnaGauge3 = new Gauges.AnalogueGauge(window, dataSmallDial, digitalfont_small, digitalfont_big, "AnaGauge3", "ECT", 255, StartX2, StartY2, false);
             window.AddChild(AnaGauge3);
             AnaGauge3.MaxValue = 140;
             AnaGauge3.Value = 0;
 
-            Gauges.AnalogueGauge AnaGauge4 = new Gauges.AnalogueGauge(window, dataSmallDial, "AnaGauge4", "IAT", 255, StartX2 + 144, StartY2, false);
+            Gauges.AnalogueGauge AnaGauge4 = new Gauges.AnalogueGauge(window, dataSmallDial, digitalfont_small, digitalfont_big, "AnaGauge4", "IAT", 255, StartX2 + 144, StartY2, false);
             window.AddChild(AnaGauge4);
             AnaGauge4.MaxValue = 100;
             AnaGauge4.Value = 0;
 
-            Gauges.AnalogueGauge AnaGauge5 = new Gauges.AnalogueGauge(window, dataSmallDial, "AnaGauge5", "ETH", 255, StartX2 + 144 + 144 , StartY2, false);
+            Gauges.AnalogueGauge AnaGauge5 = new Gauges.AnalogueGauge(window, dataSmallDial, digitalfont_small, digitalfont_big, "AnaGauge5", "ETH", 255, StartX2 + 144 + 144, StartY2, false);
             window.AddChild(AnaGauge5);
             AnaGauge5.MaxValue = 100;
             AnaGauge5.Value = 0;
 
-            Image Bar1 = (Image)window2.GetChildByName("bar1");
-            Bar1.Bitmap = new Bitmap(Bar1.Width, Bar1.Height);
-            Image Bar2 = (Image)window2.GetChildByName("bar2");
-            Bar2.Bitmap = new Bitmap(Bar1.Width, Bar1.Height);
+            Gauges.SlantedGauge SlantGauge1 = new Gauges.SlantedGauge(window2, bar_mask, smallfont, bigfont, "SlantGauge1", "RPM",255,0,0);
+            window2.AddChild(SlantGauge1);
+            SlantGauge1.MaxValue = 8000;
+            SlantGauge1.Value = 0;
 
-            //Setup the bitmaps
-            Debug.Print("Loading bitmaps...");
-            Bitmap bar_mask = new Bitmap(Resources.GetBytes(Resources.BinaryResources.bar_mask), Bitmap.BitmapImageType.Gif);
+            Gauges.SlantedGauge SlantGauge2 = new Gauges.SlantedGauge(window2, bar_mask, smallfont, bigfont, "SlantGauge2", "RPM",255,0,70);
+            window2.AddChild(SlantGauge2);
+            SlantGauge2.MaxValue = 100;
+            SlantGauge2.Value = 0;
 
-            //Setup the fonts
-            Debug.Print("Loading fonts...");
-            Font bigfont = Resources.GetFont(Resources.FontResources.NinaB);
-            Font smallfont = Resources.GetFont(Resources.FontResources.small);
-            Font digitalfont_big = Resources.GetFont(Resources.FontResources.digital7_14pt);
-            Font digitalfont_small = Resources.GetFont(Resources.FontResources.digital7_12pt);
+            //Image Bar1 = (Image)window2.GetChildByName("bar1");
+            //Bar1.Bitmap = new Bitmap(Bar1.Width, Bar1.Height);
+            //Image Bar2 = (Image)window2.GetChildByName("bar2");
+            //Bar2.Bitmap = new Bitmap(Bar1.Width, Bar1.Height);
+  
 
             //Draw the screen the first time
-            Debug.Print("Drawing gauges and labels...");
-
-            Bar1.Bitmap.DrawText("RPM", smallfont, Colors.White, 0, 0);
-            Bar2.Bitmap.DrawText("TPS", smallfont, Colors.White, 0, 0);
+            //Debug.Print("Drawing gauges and labels...");
+            //Bar1.Bitmap.DrawText("RPM", smallfont, Colors.White, 0, 0);
+            //Bar2.Bitmap.DrawText("TPS", smallfont, Colors.White, 0, 0);
 
             //Setup CAN Events, enable CAN and Filters
             Debug.Print("Enabling HSCAN and GMLAN...");
@@ -289,17 +298,19 @@ namespace NETMFBook1
                         TimeNow[ModuleTimers.Nav] = System.DateTime.Now.Ticks;
                     }
                 }
-              
+
+           
                 if (oldRPM != RPM)
                 {
                     if (BarGraph == true)
                     {
-                        DrawBar(RPM, 8000, 0, 4, 46, 352, Bar1.Bitmap);               //Unremark to draw new bars [TPS is fine]
-                        Bar1.Bitmap.Flush();
-                        Bar1.Bitmap.DrawImage(0, 0, bar_mask, 0, 0, 350, 50);
-                        Bar1.Bitmap.DrawText("RPM", smallfont, Colors.White, 0, 0);
-                        Bar1.Bitmap.DrawText("" + RPM, bigfont, Colors.White, 70, 5);
-                        Bar1.Invalidate();
+                        //DrawBar(RPM, 8000, 0, 4, 46, 352, Bar1.Bitmap);               //Unremark to draw new bars [TPS is fine]
+                        //Bar1.Bitmap.Flush();
+                        //Bar1.Bitmap.DrawImage(0, 0, bar_mask, 0, 0, 350,50);
+                        //Bar1.Bitmap.DrawText("RPM", smallfont, Colors.White, 0, 0);
+                        //Bar1.Bitmap.DrawText("" + RPM, bigfont, Colors.White, 70, 5);
+                        //Bar1.Invalidate();
+                        SlantGauge1.Value = RPM;
                         oldRPM = RPM;
                     }
                     else
@@ -313,12 +324,13 @@ namespace NETMFBook1
                 {
                     if (BarGraph == true)
                     {
-                        DrawBar(TPS, 100, 0, 4, 46, 352, Bar2.Bitmap);               //Unremark to draw new bars [TPS is fine]
-                        Bar2.Bitmap.Flush();
-                        Bar2.Bitmap.DrawImage(0, 0, bar_mask, 0, 0, 350, 50);
-                        Bar2.Bitmap.DrawText("TPS", smallfont, Colors.White, 0, 0);
-                        Bar2.Bitmap.DrawText("" + TPS, bigfont, Colors.White, 70, 5);
-                        Bar2.Invalidate();
+                        //DrawBar(TPS, 100, 0, 4, 46, 352, Bar2.Bitmap);               //Unremark to draw new bars [TPS is fine]
+                        //Bar2.Bitmap.Flush();
+                        //Bar2.Bitmap.DrawImage(0, 0, bar_mask, 0, 0, 350, 50);
+                        //Bar2.Bitmap.DrawText("TPS", smallfont, Colors.White, 0, 0);
+                        //Bar2.Bitmap.DrawText("" + TPS, bigfont, Colors.White, 70, 5);
+                        //Bar2.Invalidate();
+                        SlantGauge2.Value = TPS;
                         oldTPS = TPS;
                     }
                     else
@@ -568,6 +580,8 @@ namespace NETMFBook1
         {
             Debug.Print("Button 3 tapped.");
         }
+      
+        
         private static void DrawBar(int data, int max, int startpointX, int startpointY, int height, int width, Bitmap gauge)
         {
             int endpointY = (startpointY + height);

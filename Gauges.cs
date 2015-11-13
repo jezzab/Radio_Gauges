@@ -194,6 +194,235 @@ namespace NETMFBook1
 
         sealed public class SlantedGauge : DisplayObjectContainer
         {
+            String _Units = "";
+            int _XLoc = 0, _YLoc = 0;
+            int _CurrentValue = 0;
+            int _MaxValue = 100;
+            int length = 0,endx = 0, endy = 0;
+            int startpointX = 0,startpointY = 0;
+            float point = 0;
+
+            Microsoft.SPOT.Presentation.Media.Color _StartColor = Colors.Green;
+            Microsoft.SPOT.Presentation.Media.Color _EndColor = Colors.Red;
+            Microsoft.SPOT.Presentation.Media.Color _EmptyColor = Colors.Black;
+
+            Microsoft.SPOT.Presentation.Media.Color _UnitsFontColor = Colors.White;
+            Microsoft.SPOT.Presentation.Media.Color _DigitsFontColor = Colors.White;
+                   
+           private GHI.Glide.UI.Image _GaugeImage = new Image("Gauge",255,0,0,10,10);
+            Bitmap _GaugeBitmap = new Bitmap(10, 10);
+            Bitmap _GaugeMaskBitmap = new Bitmap(10, 10);
+
+
+
+            int TextWidth = 0, TextHeight = 0;
+            private  Microsoft.SPOT.Font FontUnits; //FontManager.GetFont(FontManager.FontType.droid_reg10);
+            private Microsoft.SPOT.Font FontDigits; //FontManager.GetFont(FontManager.FontType.droid_reg08);
+
+            //
+            // Summary:
+            //     Maximum value
+            public int MaxValue
+            {
+                get
+                {
+                    return _MaxValue;
+                }
+                set
+                {
+                    _MaxValue = value;
+                    //    this.Invalidate();
+                }
+            }
+            //
+            // Summary:
+            //     Value
+            public int Value
+            {
+                get
+                {
+                    return _CurrentValue;
+                }
+                set
+                {
+                    if (value == _CurrentValue)
+                    {
+                        return;
+                    }
+                    if (value > _MaxValue)
+                    {
+                        _CurrentValue = _MaxValue;
+                    }
+                    else
+                    {
+                        _CurrentValue = value;                
+                    }
+                    this.Invalidate();
+                }
+            }
+
+
+            //Starting color
+            public Microsoft.SPOT.Presentation.Media.Color StartColor
+            {
+                get
+                {
+                    return _StartColor;
+                }
+                set
+                {
+                    _StartColor = value;
+                    this.Invalidate();
+                }
+            }
+
+            //Ending color
+            public Microsoft.SPOT.Presentation.Media.Color EndColor
+            {
+                get
+                {
+                    return _EndColor;
+                }
+                set
+                {
+                    _EndColor = value;
+                    this.Invalidate();
+                }
+            }
+
+            //Emptying color
+            public Microsoft.SPOT.Presentation.Media.Color EmptyColor
+            {
+                get
+                {
+                    return _EmptyColor;
+                }
+                set
+                {
+                    _EmptyColor = value;
+                    this.Invalidate();
+                }
+            }
+
+            //Fonting color
+            public Microsoft.SPOT.Presentation.Media.Color UnitsFontColor
+            {
+                get
+                {
+                    return _UnitsFontColor;
+                }
+                set
+                {
+                    _UnitsFontColor = value;
+                    this.Invalidate();
+                }
+            }
+
+            //Fonting color
+            public Microsoft.SPOT.Presentation.Media.Color DigitsFontColor
+            {
+                get
+                {
+                    return _DigitsFontColor;
+                }
+                set
+                {
+                    _DigitsFontColor = value;
+                    this.Invalidate();
+                }
+            }
+
+
+            public SlantedGauge(DisplayObjectContainer window, byte[] GaugeMask,Font SmallFont, Font BigFont, string GaugeName, string Units, ushort alpha, int x, int y)
+            {
+                
+                Name = GaugeName;
+                Parent = window;
+              
+                X = 0;
+                Y = 0;
+                Width = window.Width;
+                Height = window.Height;
+
+               _XLoc = x;
+                _YLoc = y;
+
+                _Units = Units;
+
+                _GaugeMaskBitmap = new Bitmap(GaugeMask, Bitmap.BitmapImageType.Gif); //the mask thatll be applied
+                _GaugeBitmap = new Bitmap(_GaugeMaskBitmap.Width, _GaugeMaskBitmap.Height);// GaugeGIF.Bitmap;
+
+                FontUnits = SmallFont;
+                FontDigits = BigFont;
+
+                _GaugeImage = new Image("Gauge", 255, _XLoc, _YLoc, _GaugeBitmap.Width, _GaugeBitmap.Height);// GaugeGIF;
+                _GaugeImage.Bitmap = _GaugeBitmap;// GaugeGIF.Bitmap;
+                _GaugeImage.Parent = this;
+                            
+                AddChild(_GaugeImage);
+
+
+            }
+
+            private void DrawGauge()
+            {
+             //   _GaugeImage.Bitmap.Clear();
+                _GaugeImage.Bitmap.DrawImage(0, 0, _GaugeBitmap, 0, 0, _GaugeBitmap.Width, _GaugeBitmap.Height); //_GaugeBitmap; //draw fresh gauge
+            }
+
+            private void UpdateText()
+            {
+                //Bar1.Bitmap.DrawText("RPM", smallfont, Colors.White, 0, 0);
+                //Bar1.Bitmap.DrawText("" + RPM, bigfont, Colors.White, 70, 5);
+
+                //Add units
+           //     FontUnitsCalc.ComputeExtent(_Units, out TextWidth, out TextHeight);
+               _GaugeImage.Bitmap.DrawText(_Units, FontUnits, _UnitsFontColor,0 ,0);
+             
+            //    //Add Digit display
+            //   FontDigitsCalc.ComputeExtent(_CurrentValue.ToString(), out TextWidth, out TextHeight);
+               _GaugeImage.Bitmap.DrawText(_CurrentValue.ToString(), FontDigits, _DigitsFontColor, (_GaugeImage.Width / 3), 5);
+            }
+
+           
+
+
+            private void DrawColouredBox()
+            {
+                 endy = (startpointY + _GaugeImage.Height);
+                 endx = (_CurrentValue * ( _GaugeImage.Width / _MaxValue));
+
+                 _GaugeImage.Bitmap.DrawRectangle(Colors.White, 0, startpointX, startpointY, _GaugeImage.Width, _GaugeImage.Height, 0, 0, _StartColor, startpointX, (_GaugeImage.Height / 2), _EndColor, _GaugeImage.Width, (_GaugeImage.Height / 2), 65535);
+                 _GaugeImage.Bitmap.DrawRectangle(Colors.White, 0, endx, startpointY, _GaugeImage.Width - endx, _GaugeImage.Height, 0, 0, _EmptyColor, startpointX, startpointY, EmptyColor, _GaugeImage.Width, _GaugeImage.Height, 65535);
+                                
+              
+            }
+
+            private void DrawMask()
+            {
+                _GaugeImage.Bitmap.DrawImage(0, 0, _GaugeMaskBitmap, 0, 0, _GaugeMaskBitmap.Width, _GaugeMaskBitmap.Height);
+            }
+       
+            public override void Render()
+            {
+               
+                DrawGauge();
+                UpdateText();
+                DrawColouredBox();
+                DrawMask();
+                base.Render();
+            }
+
+
+            //private static void DrawBar(int data, int max, int startpointX, int startpointY, int height, int width, Bitmap gauge)
+            //{
+            //    int endpointY = (startpointY + height);
+            //    float stepsize = (float)width / (float)max;
+            //    float endx = ((float)data * stepsize);
+            //    gauge.DrawRectangle(Colors.White, 0, startpointX, startpointY, width, height, 0, 0, Colors.Green, startpointX, (height / 2), Colors.Red, width, (height / 2), 65535);
+            //    gauge.DrawRectangle(Colors.White, 0, (int)endx, startpointY, width - (int)endx, height, 0, 0, Colors.Black, startpointX, startpointY, Colors.Black, width, height, 65535);
+            //    gauge.Flush();
+            //}
 
         }
 
@@ -258,6 +487,10 @@ namespace NETMFBook1
                 }
                 set
                 {
+                    if (value == _CurrentValue)
+                    {
+                        return;
+                    }
                     if (value > _MaxValue)
                     {
                         _CurrentValue = _MaxValue;
@@ -357,7 +590,7 @@ namespace NETMFBook1
 
 
 
-            public AnalogueGauge(DisplayObjectContainer window, byte[] GaugeGIF, string GaugeName, string Units, ushort alpha, int x, int y, bool IsBigGauge)
+            public AnalogueGauge(DisplayObjectContainer window, byte[] GaugeGIF, Font SmallFont, Font BigFont, string GaugeName, string Units, ushort alpha, int x, int y, bool IsBigGauge)
             {
                 
                 Name = GaugeName;
