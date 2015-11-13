@@ -59,7 +59,7 @@ namespace NETMFBook1
         public static int oldY;
         public static int X;
         public static int Y;
-        public static int RPM;                          //Setup all variables for the PIDs
+        public static int RPM = 0;                          //Setup all variables for the PIDs
         public static int oldRPM = -1;
         public static int ECT = -1;
         public static int oldECT = 0;
@@ -266,6 +266,8 @@ namespace NETMFBook1
                 //IAT += 1;
                 //ETH += 1;
 
+                //can2.SendMessage(reqSpark);
+
                 //Change screens using slide if button pressed
                 if(BarGraph == true)
                     if (Glide.MainWindow == window) { Tween.SlideWindow(window, window2, Direction.Left); }
@@ -302,6 +304,7 @@ namespace NETMFBook1
                     else
                     {
                         AnaGauge1.Value = RPM;
+                        oldRPM = RPM;
                     }
                 }
 
@@ -319,6 +322,7 @@ namespace NETMFBook1
                     else
                     {
                         AnaGauge2.Value = TPS;
+                        oldTPS = TPS;
                     }
                 }
 
@@ -329,6 +333,7 @@ namespace NETMFBook1
                     else
                     {
                         AnaGauge3.Value = ECT;
+                        oldECT = ECT;
                     }
                 }
 
@@ -339,6 +344,7 @@ namespace NETMFBook1
                     else
                     {
                         AnaGauge4.Value = IAT;
+                        oldIAT = IAT;
                     }
                 }
 
@@ -349,6 +355,7 @@ namespace NETMFBook1
                     else
                     {
                         AnaGauge5.Value = ETH;
+                        oldETH = ETH;
                     }
                 }
 
