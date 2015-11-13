@@ -298,8 +298,9 @@ namespace NETMFBook1
                         Bar1.Bitmap.Flush();
                         Bar1.Bitmap.DrawImage(0, 0, bar_mask, 0, 0, 350, 50);
                         Bar1.Bitmap.DrawText("RPM", smallfont, Colors.White, 0, 0);
-                        Bar1.Bitmap.DrawText("" + RPM, smallfont, Colors.White, 0, 15);
+                        Bar1.Bitmap.DrawText("" + RPM, bigfont, Colors.White, 70, 5);
                         Bar1.Invalidate();
+                        oldRPM = RPM;
                     }
                     else
                     {
@@ -316,8 +317,9 @@ namespace NETMFBook1
                         Bar2.Bitmap.Flush();
                         Bar2.Bitmap.DrawImage(0, 0, bar_mask, 0, 0, 350, 50);
                         Bar2.Bitmap.DrawText("TPS", smallfont, Colors.White, 0, 0);
-                        Bar2.Bitmap.DrawText("" + TPS, smallfont, Colors.White, 0, 15);
+                        Bar2.Bitmap.DrawText("" + TPS, bigfont, Colors.White, 70, 5);
                         Bar2.Invalidate();
+                        oldTPS = TPS;
                     }
                     else
                     {
