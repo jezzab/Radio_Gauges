@@ -367,7 +367,7 @@ namespace NETMFBook1
             private void DrawGauge()
             {
              //   _GaugeImage.Bitmap.Clear();
-                _GaugeImage.Bitmap.DrawImage(0, 0, _GaugeBitmap, 0, 0, _GaugeBitmap.Width, _GaugeBitmap.Height); //_GaugeBitmap; //draw fresh gauge
+             //   _GaugeImage.Bitmap.DrawImage(0, 0, _GaugeMaskBitmap, 0, 0, _GaugeMaskBitmap.Width, _GaugeMaskBitmap.Height); //_GaugeBitmap; //draw fresh gauge
             }
 
             private void UpdateText()
@@ -381,7 +381,7 @@ namespace NETMFBook1
              
             //    //Add Digit display
             //   FontDigitsCalc.ComputeExtent(_CurrentValue.ToString(), out TextWidth, out TextHeight);
-               _GaugeImage.Bitmap.DrawText(_CurrentValue.ToString(), FontDigits, _DigitsFontColor, (_GaugeImage.Width / 3), 5);
+               _GaugeImage.Bitmap.DrawText(_CurrentValue.ToString(), FontDigits, _DigitsFontColor, (_GaugeImage.Width / 4), 5);
             }
 
            
@@ -390,7 +390,7 @@ namespace NETMFBook1
             private void DrawColouredBox()
             {
                  endy = (startpointY + _GaugeImage.Height);
-                 endx = (_CurrentValue * ( _GaugeImage.Width / _MaxValue));
+                 endx = (int)((float)_CurrentValue * ((float)((_GaugeImage.Width) / (float)_MaxValue)));
 
                  _GaugeImage.Bitmap.DrawRectangle(Colors.White, 0, startpointX, startpointY, _GaugeImage.Width, _GaugeImage.Height, 0, 0, _StartColor, startpointX, (_GaugeImage.Height / 2), _EndColor, _GaugeImage.Width, (_GaugeImage.Height / 2), 65535);
                  _GaugeImage.Bitmap.DrawRectangle(Colors.White, 0, endx, startpointY, _GaugeImage.Width - endx, _GaugeImage.Height, 0, 0, _EmptyColor, startpointX, startpointY, EmptyColor, _GaugeImage.Width, _GaugeImage.Height, 65535);
@@ -407,9 +407,9 @@ namespace NETMFBook1
             {
                
                 DrawGauge();
-                UpdateText();
                 DrawColouredBox();
                 DrawMask();
+                UpdateText();
                 base.Render();
             }
 

@@ -89,7 +89,7 @@ namespace NETMFBook1
         public static int UpdateRate = 25;              //Rate to update the display/drop frames
         public static int RPMTime;
         public static int x, y;                         //gauge X Y position
-        public static bool BarGraph = false;            //set default display screen
+        public static bool BarGraph = true;            //set default display screen
 
         public static void Main()
         {   
@@ -209,12 +209,12 @@ namespace NETMFBook1
             AnaGauge5.MaxValue = 100;
             AnaGauge5.Value = 0;
 
-            Gauges.SlantedGauge SlantGauge1 = new Gauges.SlantedGauge(window2, bar_mask, smallfont, bigfont, "SlantGauge1", "RPM",255,0,0);
+            Gauges.SlantedGauge SlantGauge1 = new Gauges.SlantedGauge(window2, bar_mask, smallfont, bigfont, "SlantGauge1", "RPM",255,5,5);
             window2.AddChild(SlantGauge1);
             SlantGauge1.MaxValue = 8000;
             SlantGauge1.Value = 0;
-
-            Gauges.SlantedGauge SlantGauge2 = new Gauges.SlantedGauge(window2, bar_mask, smallfont, bigfont, "SlantGauge2", "RPM",255,0,70);
+        
+            Gauges.SlantedGauge SlantGauge2 = new Gauges.SlantedGauge(window2, bar_mask, smallfont, bigfont, "SlantGauge2", "TPS",255,5,75);
             window2.AddChild(SlantGauge2);
             SlantGauge2.MaxValue = 100;
             SlantGauge2.Value = 0;
@@ -300,8 +300,7 @@ namespace NETMFBook1
                 }
 
            
-                if (oldRPM != RPM)
-                {
+             
                     if (BarGraph == true)
                     {
                         //DrawBar(RPM, 8000, 0, 4, 46, 352, Bar1.Bitmap);               //Unremark to draw new bars [TPS is fine]
@@ -318,10 +317,9 @@ namespace NETMFBook1
                         AnaGauge1.Value = RPM;
                         oldRPM = RPM;
                     }
-                }
+                
 
-                if (oldTPS != TPS)
-                {
+               
                     if (BarGraph == true)
                     {
                         //DrawBar(TPS, 100, 0, 4, 46, 352, Bar2.Bitmap);               //Unremark to draw new bars [TPS is fine]
@@ -338,7 +336,7 @@ namespace NETMFBook1
                         AnaGauge2.Value = TPS;
                         oldTPS = TPS;
                     }
-                }
+               
 
                 if (oldECT != ECT)
                 {
