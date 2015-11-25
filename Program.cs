@@ -170,7 +170,7 @@ namespace NETMFBook1
             Debug.Print("Setting up Glide Touch system...");
             GlideTouch.Initialize();
 
-            SmoothLine.initRLP();
+         //   SmoothLine.initRLP();
 
             //Setup the fonts
             Debug.Print("Loading fonts...");
@@ -297,7 +297,7 @@ namespace NETMFBook1
                 //ECT += 1;
                 //IAT += 1;
                 //ETH += 1;
-
+                //Thread.Sleep(20);
                 //can2.SendMessage(reqSpark);
 
                 //Change screens using slide if button pressed
@@ -337,7 +337,7 @@ namespace NETMFBook1
                 }
                 else
                 {
-                    AnaGauge1.Value = RPM;
+                    AnaGauge1.Value =  RPM;
                     oldRPM = RPM;
                 }
 

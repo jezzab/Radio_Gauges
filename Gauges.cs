@@ -649,6 +649,7 @@ namespace NETMFBook1
             private void DrawGauge()
             {
              //   _GaugeImage.Bitmap.Clear();
+          
                 _GaugeImage.Bitmap.DrawImage(0, 0, _GaugeBitmap, 0, 0, _GaugeBitmap.Width, _GaugeBitmap.Height); //_GaugeBitmap; //draw fresh gauge
             }
 
@@ -700,11 +701,11 @@ namespace NETMFBook1
                 NeedleEndx += NeedlestartpointX;                                   //center point
                 NeedleEndy += NeedlestartpointY;                                   //center point
 
-                _TempGaugeBitmap = _GaugeImage.Bitmap;
-                SmoothLine.drawLineRLPFix((float)NeedlestartpointX, (float)NeedlestartpointY, (float)NeedleEndx, (float)NeedleEndy, ref  _TempGaugeBitmap, Colors.Red, (float)1);
-                _GaugeImage.Bitmap = _TempGaugeBitmap;
+            //    _TempGaugeBitmap = _GaugeImage.Bitmap;
+             //   SmoothLine.drawLineRLPFix((float)NeedlestartpointX, (float)NeedlestartpointY, (float)NeedleEndx, (float)NeedleEndy, ref  _TempGaugeBitmap, Colors.Red, (float)1);
+             //   _GaugeImage.Bitmap = _TempGaugeBitmap;
 
-           //     _GaugeImage.Bitmap.DrawLine(Colors.Red, 1, NeedlestartpointX, NeedlestartpointY, NeedleEndx, NeedleEndy);
+                _GaugeImage.Bitmap.DrawLine(Colors.Red, 1, NeedlestartpointX, NeedlestartpointY, NeedleEndx, NeedleEndy);
 
                 if (_IsBigGauge == true) { _GaugeImage.Bitmap.DrawImage(NeedlestartpointX - (centerbig.Width / 2), NeedlestartpointY - (centerbig.Height / 2), centerbig, 0, 0, centerbig.Width, centerbig.Height); }
                 else { _GaugeImage.Bitmap.DrawImage(NeedlestartpointX - (centersmall.Width / 2), NeedlestartpointY - (centersmall.Height / 2), centersmall, 0, 0, centersmall.Width, centersmall.Height); }
