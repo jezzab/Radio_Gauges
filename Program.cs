@@ -89,7 +89,7 @@ namespace NETMFBook1
         public static int UpdateRate = 25;              //Rate to update the display/drop frames
         public static int RPMTime;
         public static int x, y;                         //gauge X Y position
-        public static bool BarGraph = true;            //set default display screen
+        public static bool BarGraph = false;            //set default display screen
 
         public static void Main()
         {   
@@ -137,6 +137,8 @@ namespace NETMFBook1
 
             if (IsS1) Debug.Print("Radio is a S1");
 
+
+
             //Load Jezzas wicked RGBS DLL file and init the display and pixel clocks
             Debug.Print("Setting RGBS Output and Pixel Clocks on Chrontel 7026B DAC...");
             VideoOutModulePlainNETMF.RGBSvideoOut.SetDisplayConfig();
@@ -152,6 +154,10 @@ namespace NETMFBook1
             uint[] filter2 = { 0xC9, 0x4C1, 0x3FB, 0x7E8 };       //HSCAN
             //uint[] filter2 = { 0xC9, 0x4C1, 0x1E5, 0x1E9 };     //HSCAN
             
+
+            //Load RLP
+            SmoothLine.initRLP();
+
             //Set screen dimensions
             int videoOutWidth = 395;
             int videoOutHeight = 240;
@@ -184,10 +190,11 @@ namespace NETMFBook1
             int StartY1 = 0x8;
             int StartX2 = 0x4;
             int StartY2 = 135;
-            Gauges.AnalogueGauge AnaGauge1 = new Gauges.AnalogueGauge(window, dataLargeDial,digitalfont_small,digitalfont_big, "AnaGauge1", "RPM", 255, StartX1, StartY1, true);
+            Gauges.AnalogueGauge AnaGauge1 = new Gauges.AnalogueGauge(window, dataLargeDial,digitalfont_small,digitalfont_big, "AnaGauge1", "Spark", 255, StartX1, StartY1, true);
             window.AddChild(AnaGauge1);
-            AnaGauge1.MaxValue = 8000;
-            AnaGauge1.Value = 0;
+            AnaGauge1.MaxValue = 64;
+            AnaGauge1.MinValue = -64;
+            AnaGauge1.Value = -64;
 
             Gauges.AnalogueGauge AnaGauge2 = new Gauges.AnalogueGauge(window, dataLargeDial, digitalfont_small, digitalfont_big, "AnaGauge2", "TPS", 255, StartX1 + 147, StartY1, true);
             window.AddChild(AnaGauge2);
@@ -269,6 +276,8 @@ namespace NETMFBook1
             //Run forever. 100 miles and running [NWA FTW]......
             while (true)
             {
+                Thread.Sleep(150);
+                 
                 //RPM += 50;
                 //TPS += 1;
                 //ECT += 1;
@@ -309,16 +318,17 @@ namespace NETMFBook1
                         //Bar1.Bitmap.DrawText("RPM", smallfont, Colors.White, 0, 0);
                         //Bar1.Bitmap.DrawText("" + RPM, bigfont, Colors.White, 70, 5);
                         //Bar1.Invalidate();
-                        SlantGauge1.Value = RPM;
-                        oldRPM = RPM;
+                        //SlantGauge1.Value += 1;
+                          SlantGauge1.Value = RPM;
+                     //   oldRPM = RPM;
                     }
                     else
                     {
-                        AnaGauge1.Value = RPM;
-                        oldRPM = RPM;
+                        AnaGauge1.Value += 1;//RPM;
+                      //  oldRPM = RPM;
                     }
                 
-
+               // VSS = (int)((float)((int)((received.Data[0] * 0x100) + received.Data[1]) * 0.015625));
                
                     if (BarGraph == true)
                     {

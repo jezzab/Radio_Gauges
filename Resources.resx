@@ -151,4 +151,7 @@
   <data name="bar_mask" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>images\bar_mask.gif;System.Byte[], mscorlib, Version=4.3.1.0, Culture=neutral, PublicKeyToken=null</value>
   </data>
+  <data name="smoothLineG120_43" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>smoothLineG120_43.elf;System.Byte[], mscorlib, Version=4.3.1.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
 </root>

@@ -42,6 +42,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="SmoothLine.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="GHI.Glide, Version=4.3.7.10, Culture=neutral, processorArchitecture=MSIL" />
@@ -72,6 +73,7 @@
     <None Include="Font\digital7-14pt.tinyfnt" />
     <None Include="Font\NinaB.tinyfnt" />
     <None Include="Font\small.tinyfnt" />
+    <None Include="smoothLineG120_43.elf" />
     <None Include="test.xml">
       <SubType>Designer</SubType>
     </None>

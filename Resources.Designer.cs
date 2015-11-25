@@ -41,6 +41,7 @@ namespace NETMFBook1
         internal enum BinaryResources : short
         {
             centersmall = -27029,
+            smoothLineG120_43 = -22506,
             center = -7693,
             GaugeSmall = 2307,
             bar_mask = 10975,

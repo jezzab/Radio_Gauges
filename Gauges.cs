@@ -438,6 +438,7 @@ namespace NETMFBook1
             int _XLoc = 0, _YLoc = 0;
             int _CurrentValue = 0;
             int _MaxValue = 100;
+            int _MinValue = 0;
             bool _IsBigGauge = false;
             int Needlelength = 0, NeedleEndx = 0, NeedleEndy = 0;
             int NeedlestartpointX = 0, NeedlestartpointY = 0;
@@ -476,6 +477,26 @@ namespace NETMFBook1
                     //    this.Invalidate();
                 }
             }
+
+
+
+
+            //
+            // Summary:
+            //     Minimum value
+            public int MinValue
+            {
+                get
+                {
+                    return _MinValue;
+                }
+                set
+                {
+                    _MinValue = value;
+                    //    this.Invalidate();
+                }
+            }
+
             //
             // Summary:
             //     Value
@@ -495,9 +516,13 @@ namespace NETMFBook1
                     {
                         _CurrentValue = _MaxValue;
                     }
+                    else if (value < _MinValue)
+                    {
+                        _CurrentValue = _MinValue;
+                    }
                     else
                     {
-                        _CurrentValue = value;                
+                        _CurrentValue = value;
                     }
                     this.Invalidate();
                 }
@@ -646,6 +671,7 @@ namespace NETMFBook1
             }
 
 
+            Bitmap _TempGaugeBitmap = new Bitmap(10, 10);
             private void DrawNeedle()
             {
                 NeedlestartpointX = _GaugeImage.Width / 2;
@@ -653,8 +679,16 @@ namespace NETMFBook1
                 Needlelength = _GaugeImage.Width / 3;
 
 
+            
 
-                Needlepoint = (float)_CurrentValue / ((float)_MaxValue / 245);         //245deg max sweep max=max units (step size calc)
+
+                float TopVal = _CurrentValue + System.Math.Abs(_MinValue);
+                float bottomVal = _MaxValue - _MinValue; //so that is the total range
+                bottomVal = bottomVal / 245;
+              
+               // Needlepoint = (float)(System.Math.Abs(_CurrentValue)) / ((float)(((System.Math.Abs(_MinValue)) + _MaxValue) / 245));         //245deg max sweep max=max units (step size calc)
+                Needlepoint = TopVal / bottomVal;
+                
                 //short needle for small gauge
                 float angle = 149 + Needlepoint;                                       //153deg is start point angle
                 float radians;
@@ -666,8 +700,11 @@ namespace NETMFBook1
                 NeedleEndx += NeedlestartpointX;                                   //center point
                 NeedleEndy += NeedlestartpointY;                                   //center point
 
+                _TempGaugeBitmap = _GaugeImage.Bitmap;
+                SmoothLine.drawLineRLPFix((float)NeedlestartpointX, (float)NeedlestartpointY, (float)NeedleEndx, (float)NeedleEndy, ref  _TempGaugeBitmap, Colors.Red, (float)1);
+                _GaugeImage.Bitmap = _TempGaugeBitmap;
 
-                _GaugeImage.Bitmap.DrawLine(Colors.Red, 1, NeedlestartpointX, NeedlestartpointY, NeedleEndx, NeedleEndy);
+           //     _GaugeImage.Bitmap.DrawLine(Colors.Red, 1, NeedlestartpointX, NeedlestartpointY, NeedleEndx, NeedleEndy);
 
                 if (_IsBigGauge == true) { _GaugeImage.Bitmap.DrawImage(NeedlestartpointX - (centerbig.Width / 2), NeedlestartpointY - (centerbig.Height / 2), centerbig, 0, 0, centerbig.Width, centerbig.Height); }
                 else { _GaugeImage.Bitmap.DrawImage(NeedlestartpointX - (centersmall.Width / 2), NeedlestartpointY - (centersmall.Height / 2), centersmall, 0, 0, centersmall.Width, centersmall.Height); }
