@@ -79,6 +79,8 @@ namespace NETMFBook1
         public static int oldETH = -1;
         public static int SPKAdv;
         public static int oldSPKAdv = -1;
+        public static int VSS;
+        public static int oldVSS = 0;
         public static bool touchedOn = false;
         public static bool touchedOff = false;
         public static bool firstrun = true;
@@ -92,7 +94,11 @@ namespace NETMFBook1
         public static bool BarGraph = false;            //set default display screen
 
         public static void Main()
-        {   
+        {
+            // Overclock G120 w00t
+            //var EMCCLKSEL = new GHI.Processor.Register(0x400FC100);
+            //EMCCLKSEL.ClearBits(1 << 0); 
+
             //Look for USB.. setup event handles
             RemovableMedia.Insert += new InsertEventHandler(RemovableMedia_Insert); //event when inserted
             RemovableMedia.Eject += new EjectEventHandler(RemovableMedia_Eject); //event when ejected
@@ -137,8 +143,6 @@ namespace NETMFBook1
 
             if (IsS1) Debug.Print("Radio is a S1");
 
-
-
             //Load Jezzas wicked RGBS DLL file and init the display and pixel clocks
             Debug.Print("Setting RGBS Output and Pixel Clocks on Chrontel 7026B DAC...");
             VideoOutModulePlainNETMF.RGBSvideoOut.SetDisplayConfig();
@@ -151,12 +155,8 @@ namespace NETMFBook1
 
             //CAN Bus Explicit Filtersx
             uint[] filter1 = { 0x102F8080, 0x102E0080 };          //GMLAN
-            uint[] filter2 = { 0xC9, 0x4C1, 0x3FB, 0x7E8 };       //HSCAN
+            uint[] filter2 = { 0xC9, 0x4C1, 0x3FB, 0x7E8, 0x3E9 };       //HSCAN
             //uint[] filter2 = { 0xC9, 0x4C1, 0x1E5, 0x1E9 };     //HSCAN
-            
-
-            //Load RLP
-            SmoothLine.initRLP();
 
             //Set screen dimensions
             int videoOutWidth = 395;
@@ -169,6 +169,8 @@ namespace NETMFBook1
             Window window2 = new Window("window2", 395, 240);//GlideLoader.LoadWindow(Resources.GetString(Resources.StringResources.window2));
             Debug.Print("Setting up Glide Touch system...");
             GlideTouch.Initialize();
+
+            SmoothLine.initRLP();
 
             //Setup the fonts
             Debug.Print("Loading fonts...");
@@ -185,16 +187,15 @@ namespace NETMFBook1
             window.AddChild(Border);
             //Border.DrawRectangle(Colors.Red, 1, 5, 10, 370, 205, 0, 0, Colors.White, 6500, 6500, Colors.White, 6500, 6500, 0);    //IQ 
             Border.DrawRectangle(Colors.Red, 1, 5, 10, 370, 205, 0, 0, Colors.White, 6500, 6500, Colors.White, 6500, 6500, 0);      //S1
-            
+
             int StartX1 = 0x27;
             int StartY1 = 0x8;
             int StartX2 = 0x4;
             int StartY2 = 135;
-            Gauges.AnalogueGauge AnaGauge1 = new Gauges.AnalogueGauge(window, dataLargeDial,digitalfont_small,digitalfont_big, "AnaGauge1", "Spark", 255, StartX1, StartY1, true);
+            Gauges.AnalogueGauge AnaGauge1 = new Gauges.AnalogueGauge(window, dataLargeDial, digitalfont_small, digitalfont_big, "AnaGauge1", "RPM", 255, StartX1, StartY1, true);
             window.AddChild(AnaGauge1);
-            AnaGauge1.MaxValue = 64;
-            AnaGauge1.MinValue = -64;
-            AnaGauge1.Value = -64;
+            AnaGauge1.MaxValue = 8000;
+            AnaGauge1.Value = 0;
 
             Gauges.AnalogueGauge AnaGauge2 = new Gauges.AnalogueGauge(window, dataLargeDial, digitalfont_small, digitalfont_big, "AnaGauge2", "TPS", 255, StartX1 + 147, StartY1, true);
             window.AddChild(AnaGauge2);
@@ -216,21 +217,27 @@ namespace NETMFBook1
             AnaGauge5.MaxValue = 100;
             AnaGauge5.Value = 0;
 
-            Gauges.SlantedGauge SlantGauge1 = new Gauges.SlantedGauge(window2, bar_mask, smallfont, bigfont, "SlantGauge1", "RPM",255,5,5);
+            Gauges.SlantedGauge SlantGauge1 = new Gauges.SlantedGauge(window2, bar_mask, smallfont, bigfont, "SlantGauge1", "RPM", 255, 5, 5);
             window2.AddChild(SlantGauge1);
             SlantGauge1.MaxValue = 8000;
             SlantGauge1.Value = 0;
-        
-            Gauges.SlantedGauge SlantGauge2 = new Gauges.SlantedGauge(window2, bar_mask, smallfont, bigfont, "SlantGauge2", "TPS",255,5,75);
+
+            Gauges.SlantedGauge SlantGauge2 = new Gauges.SlantedGauge(window2, bar_mask, smallfont, bigfont, "SlantGauge2", "TPS", 255, 5, 75);
             window2.AddChild(SlantGauge2);
             SlantGauge2.MaxValue = 100;
             SlantGauge2.Value = 0;
+
+            Gauges.SlantedGauge SlantGauge3 = new Gauges.SlantedGauge(window2, bar_mask, smallfont, bigfont, "SlantGauge3", "MAP", 255, 5, 145);
+            window2.AddChild(SlantGauge3);
+            SlantGauge3.MaxValue = 215;
+            SlantGauge3.Value = 0;
+
 
             //Image Bar1 = (Image)window2.GetChildByName("bar1");
             //Bar1.Bitmap = new Bitmap(Bar1.Width, Bar1.Height);
             //Image Bar2 = (Image)window2.GetChildByName("bar2");
             //Bar2.Bitmap = new Bitmap(Bar1.Width, Bar1.Height);
-  
+
 
             //Draw the screen the first time
             //Debug.Print("Drawing gauges and labels...");
@@ -255,7 +262,7 @@ namespace NETMFBook1
             PingNav.Data = new byte[] { 0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
             PingNav.Length = 2;
             PingNav.IsExtendedId = true;
-            
+
             //Request Spark Advane PID Test
             ControllerAreaNetwork.Message reqSpark = new ControllerAreaNetwork.Message();
             reqSpark.ArbitrationId = 0x7DF;
@@ -263,6 +270,15 @@ namespace NETMFBook1
             reqSpark.Length = 8;
             reqSpark.IsExtendedId = false;
             can2.SendMessage(reqSpark);
+
+            //Request Manifold Pressure (MAP) PID
+            ControllerAreaNetwork.Message reqMAP = new ControllerAreaNetwork.Message();
+            reqMAP.ArbitrationId = 0x7DF;
+            reqMAP.Data = new byte[] { 0x02, 0x01, 0x0B, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA };
+            reqMAP.Length = 8;
+            reqMAP.IsExtendedId = false;
+            can2.SendMessage(reqMAP);
+
 
             //send it the first time to fire things up if S1
             if (IsS1) can1.SendMessage(PingNav);
@@ -272,12 +288,10 @@ namespace NETMFBook1
             else
                 Glide.MainWindow = window2;
             Debug.Print("Program Started");
-          
+
             //Run forever. 100 miles and running [NWA FTW]......
             while (true)
             {
-                Thread.Sleep(150);
-                 
                 //RPM += 50;
                 //TPS += 1;
                 //ECT += 1;
@@ -287,12 +301,12 @@ namespace NETMFBook1
                 //can2.SendMessage(reqSpark);
 
                 //Change screens using slide if button pressed
-                if(BarGraph == true)
+                if (BarGraph == true)
                     if (Glide.MainWindow == window) { Tween.SlideWindow(window, window2, Direction.Left); }
-                     else { }
-                
-                if(BarGraph == false)
-                    if (Glide.MainWindow == window2){Tween.SlideWindow(window2, window, Direction.Right);}
+                    else { }
+
+                if (BarGraph == false)
+                    if (Glide.MainWindow == window2) { Tween.SlideWindow(window2, window, Direction.Right); }
                     else { }
 
                 if (IsS1) //NAV
@@ -308,45 +322,64 @@ namespace NETMFBook1
                     }
                 }
 
-           
-             
-                    if (BarGraph == true)
+
+
+                if (BarGraph == true)
+                {
+                    //DrawBar(RPM, 8000, 0, 4, 46, 352, Bar1.Bitmap);               //Unremark to draw new bars [TPS is fine]
+                    //Bar1.Bitmap.Flush();
+                    //Bar1.Bitmap.DrawImage(0, 0, bar_mask, 0, 0, 350,50);
+                    //Bar1.Bitmap.DrawText("RPM", smallfont, Colors.White, 0, 0);
+                    //Bar1.Bitmap.DrawText("" + RPM, bigfont, Colors.White, 70, 5);
+                    //Bar1.Invalidate();
+                    SlantGauge1.Value = RPM;
+                    oldRPM = RPM;
+                }
+                else
+                {
+                    AnaGauge1.Value = RPM;
+                    oldRPM = RPM;
+                }
+
+
+
+                if (BarGraph == true)
+                {
+                    //DrawBar(TPS, 100, 0, 4, 46, 352, Bar2.Bitmap);               //Unremark to draw new bars [TPS is fine]
+                    //Bar2.Bitmap.Flush();
+                    //Bar2.Bitmap.DrawImage(0, 0, bar_mask, 0, 0, 350, 50);
+                    //Bar2.Bitmap.DrawText("TPS", smallfont, Colors.White, 0, 0);
+                    //Bar2.Bitmap.DrawText("" + TPS, bigfont, Colors.White, 70, 5);
+                    //Bar2.Invalidate();
+                    SlantGauge2.Value = TPS;
+                    oldTPS = TPS;
+                }
+                else
+                {
+                    AnaGauge2.Value = TPS;
+                    oldTPS = TPS;
+                }
+
+                if (BarGraph == true)
+                {
+                    if (((TimeNow[ModuleTimers.MAP] - LastTime[ModuleTimers.MAP]) / TimeSpan.TicksPerMillisecond) > 100)
                     {
-                        //DrawBar(RPM, 8000, 0, 4, 46, 352, Bar1.Bitmap);               //Unremark to draw new bars [TPS is fine]
-                        //Bar1.Bitmap.Flush();
-                        //Bar1.Bitmap.DrawImage(0, 0, bar_mask, 0, 0, 350,50);
-                        //Bar1.Bitmap.DrawText("RPM", smallfont, Colors.White, 0, 0);
-                        //Bar1.Bitmap.DrawText("" + RPM, bigfont, Colors.White, 70, 5);
-                        //Bar1.Invalidate();
-                        //SlantGauge1.Value += 1;
-                          SlantGauge1.Value = RPM;
-                     //   oldRPM = RPM;
+                        can2.SendMessage(reqMAP);
+                        LastTime[ModuleTimers.MAP] = TimeNow[ModuleTimers.MAP];
                     }
                     else
                     {
-                        AnaGauge1.Value += 1;//RPM;
-                      //  oldRPM = RPM;
+                        TimeNow[ModuleTimers.MAP] = System.DateTime.Now.Ticks;
                     }
-                
-               // VSS = (int)((float)((int)((received.Data[0] * 0x100) + received.Data[1]) * 0.015625));
-               
-                    if (BarGraph == true)
-                    {
-                        //DrawBar(TPS, 100, 0, 4, 46, 352, Bar2.Bitmap);               //Unremark to draw new bars [TPS is fine]
-                        //Bar2.Bitmap.Flush();
-                        //Bar2.Bitmap.DrawImage(0, 0, bar_mask, 0, 0, 350, 50);
-                        //Bar2.Bitmap.DrawText("TPS", smallfont, Colors.White, 0, 0);
-                        //Bar2.Bitmap.DrawText("" + TPS, bigfont, Colors.White, 70, 5);
-                        //Bar2.Invalidate();
-                        SlantGauge2.Value = TPS;
-                        oldTPS = TPS;
-                    }
-                    else
-                    {
-                        AnaGauge2.Value = TPS;
-                        oldTPS = TPS;
-                    }
-               
+                    SlantGauge3.Value = MAP;
+                    oldMAP = MAP;
+                }
+                else
+                {
+                    //AnaGauge2.Value = TPS;
+                    oldMAP = MAP;
+                }
+
 
                 if (oldECT != ECT)
                 {
@@ -504,6 +537,7 @@ namespace NETMFBook1
                     oldMAP = MAP;
                     oldETH = ETH;
                     oldSPKAdv = SPKAdv;
+                    oldVSS = VSS;
                     firstrun = false;
                 }
                 if (received.ArbitrationId == 0x3FB)
@@ -524,6 +558,11 @@ namespace NETMFBook1
                 {
                     MAP = received.Data[2] + 14;
                 }
+                if (received.ArbitrationId == 0x3E9)
+                {
+                    VSS = (int)(((received.Data[0] * 0x100) + received.Data[1]) * 0.015625);
+                    //Debug.Print("VSS: " + VSS);
+                }
                 if (received.ArbitrationId == 0x1E5)
                 {
                     SWA = ((received.Data[5] * 0x100) + received.Data[6]);
@@ -542,6 +581,9 @@ namespace NETMFBook1
                 if (received.ArbitrationId == 0x7E8)
                     if (received.Data[2] == 0xE)
                         SPKAdv = (received.Data[3] / 2) - 64;
+                if (received.Data[2] == 0xB)
+                    MAP = (received.Data[3] + 14);
+
             }
         }
         private static void can_ErrorReceived(ControllerAreaNetwork sender, ControllerAreaNetwork.ErrorReceivedEventArgs e)
@@ -558,7 +600,7 @@ namespace NETMFBook1
             Debug.Print("Insert event fired; USB Storage mount is finished.");
             if (e.Volume.IsFormatted)
             {
-                
+
                 rootDirectory = e.Volume.RootDirectory;
                 /*
                 Debug.Print("Available folders:");
@@ -588,8 +630,8 @@ namespace NETMFBook1
         {
             Debug.Print("Button 3 tapped.");
         }
-      
-        
+
+
         private static void DrawBar(int data, int max, int startpointX, int startpointY, int height, int width, Bitmap gauge)
         {
             int endpointY = (startpointY + height);
