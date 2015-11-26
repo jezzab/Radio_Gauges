@@ -66,7 +66,7 @@ namespace NETMFBook1
         public static int Y;
         public static int RPM = 0, oldRPM = -1;
         public static int ECT = -1, oldECT = 0;
-        public static int IAT = -1, oldIAT;
+        public static int IAT = -1, oldIAT = 0;
         public static int TPS, oldTPS = -1;
         public static int MAP, oldMAP = 0;
         public static int Boost, oldBoost = 0;
@@ -216,21 +216,22 @@ namespace NETMFBook1
             Gauges.AnalogueGauge AnaGauge5 = new Gauges.AnalogueGauge(window, dataSmallDial, digitalfont_small, digitalfont_big, "AnaGauge5", "IAT", 255, StartX2 + 144 + 144, StartY2, false);
             window.AddChild(AnaGauge5);
             AnaGauge5.MaxValue = 100;
-            AnaGauge5.Value = -40;
+            AnaGauge5.MinValue = -40;
+            AnaGauge5.Value = 0;
 
             Gauges.SlantedGauge SlantGauge1 = new Gauges.SlantedGauge(window2, bar_mask, smallfont, bigfont, "SlantGauge1", "RPM", 255, 5, 5);
             window2.AddChild(SlantGauge1);
             SlantGauge1.MaxValue = 8000;
             SlantGauge1.Value = 0;
 
-            Gauges.SlantedGauge SlantGauge2 = new Gauges.SlantedGauge(window2, bar_mask, smallfont, bigfont, "SlantGauge2", "TPS", 255, 5, 75);
+            Gauges.SlantedGauge SlantGauge2 = new Gauges.SlantedGauge(window2, bar_mask, smallfont, bigfont, "SlantGauge2", "Boost", 255, 5, 75);
             window2.AddChild(SlantGauge2);
-            SlantGauge2.MaxValue = 100;
+            SlantGauge2.MaxValue = 15;
             SlantGauge2.Value = 0;
 
-            Gauges.SlantedGauge SlantGauge3 = new Gauges.SlantedGauge(window2, bar_mask, smallfont, bigfont, "SlantGauge3", "Boost", 255, 5, 145);
+            Gauges.SlantedGauge SlantGauge3 = new Gauges.SlantedGauge(window2, bar_mask, smallfont, bigfont, "SlantGauge3", "Throttle", 255, 5, 145);
             window2.AddChild(SlantGauge3);
-            SlantGauge3.MaxValue = 15;
+            SlantGauge3.MaxValue = 100;
             SlantGauge3.Value = 0;
             
             window.BackImage = new Bitmap(dataBackground, Bitmap.BitmapImageType.Gif);
@@ -420,7 +421,8 @@ namespace NETMFBook1
 
                 if (BarGraph == true)
                 {
-                    SlantGauge2.Value = MAP;
+                    SlantGauge2.Value = Boost;
+                    oldBoost = Boost;
                     oldMAP = MAP;
                 }
                 else
@@ -431,8 +433,8 @@ namespace NETMFBook1
 
                 if (BarGraph == true)
                 {
-                    SlantGauge3.Value = SPKAdv;
-                    oldSPKAdv = SPKAdv;
+                    SlantGauge3.Value = TPS;
+                    oldTPS = TPS;
                 }
                 else
                 {
@@ -453,7 +455,7 @@ namespace NETMFBook1
                 { }
                 else
                 {
-                    AnaGauge4.Value = IAT;
+                    AnaGauge5.Value = IAT;
                     oldIAT = IAT;
                 }
                 
@@ -559,7 +561,7 @@ namespace NETMFBook1
                         if ((received.Data[2] == 0x00)&&(received.Data[3] == 0x0E))                       //Spark Advance
                             SPKAdv = (received.Data[4] / 2) - 64;
                         if ((received.Data[2] == 0x00)&&(received.Data[3] == 0x0F))                       //Intake Air Temp [IAT]
-                            IAT = received.Data[4] - 40;
+                            IAT = (received.Data[4]) - 40;
                         if ((received.Data[2] == 0x12)&&(received.Data[3] == 0xD9))                       //Knock Retard [KR]
                             KR = System.Math.Round(((double)received.Data[4] * 0.17578)*100.0)/100.0; 
                     }
