@@ -4,12 +4,13 @@
  * 
  * Resources are loading from a USB Stick
  * 
- * jezbeall@gmail.com (c)2015
- * Thanks to Jason Martin (Tazzie)
+ * Jeremy Beall (JezzaB) (c)2015
+ * Jason Martin (Tazzie) (c)2015
  * 
  */
 using System;
 using System.IO;
+using System.Text;
 using System.Threading;
 using Microsoft.SPOT;
 using Microsoft.SPOT.IO;
@@ -37,6 +38,7 @@ public static class ModuleTimers
     public static int Nav = 7;
     public static int Switch = 8;
 }
+
 namespace NETMFBook1
 {
     public partial class App
@@ -75,6 +77,8 @@ namespace NETMFBook1
         public static int oldYaw = 0;
         public static int MAP;
         public static int oldMAP = 0;
+        public static int Boost;
+        public static int oldBoost = 0;
         public static int ETH;
         public static int oldETH = -1;
         public static int SPKAdv;
@@ -85,7 +89,7 @@ namespace NETMFBook1
         public static bool touchedOff = false;
         public static bool firstrun = true;
         public static bool IsS1 = true;                 //is this a S1 unit? If so send Nav enable packet
-        public static bool IsAnalog = true;             //Analog or Bar display page
+        public static bool IsAnalog = true;             //Analog or Bar display page default start
         public static long[] TimeNow = new long[9];
         public static long[] LastTime = new long[9];
         public static int UpdateRate = 25;              //Rate to update the display/drop frames
@@ -96,9 +100,9 @@ namespace NETMFBook1
         public static void Main()
         {
             // Overclock G120 w00t
-            //var EMCCLKSEL = new GHI.Processor.Register(0x400FC100);
-            //EMCCLKSEL.ClearBits(1 << 0); 
-
+            var EMCCLKSEL = new GHI.Processor.Register(0x400FC100);
+            EMCCLKSEL.ClearBits(1 << 0); 
+            
             //Look for USB.. setup event handles
             RemovableMedia.Insert += new InsertEventHandler(RemovableMedia_Insert); //event when inserted
             RemovableMedia.Eject += new EjectEventHandler(RemovableMedia_Eject); //event when ejected
@@ -118,6 +122,10 @@ namespace NETMFBook1
             fileHandle = new FileStream(rootDirectory + @"\GaugeSmall.gif", FileMode.Open, FileAccess.Read);
             byte[] dataSmallDial = new byte[fileHandle.Length];
             fileHandle.Read(dataSmallDial, 0, dataSmallDial.Length);
+            fileHandle.Close();
+            fileHandle = new FileStream(rootDirectory + @"\background.gif", FileMode.Open, FileAccess.Read);
+            byte[] dataBackground = new byte[fileHandle.Length];
+            fileHandle.Read(dataBackground, 0, dataBackground.Length);
             fileHandle.Close();
 
             //Init the timing array (this is bullshit, must be an easier way. Will try the GHI Timer function in future)
@@ -167,6 +175,7 @@ namespace NETMFBook1
             Window window = new Window("window1", 395, 240);
             window.BackColor = Microsoft.SPOT.Presentation.Media.Color.Black;
             Window window2 = new Window("window2", 395, 240);//GlideLoader.LoadWindow(Resources.GetString(Resources.StringResources.window2));
+            
             Debug.Print("Setting up Glide Touch system...");
             GlideTouch.Initialize();
 
@@ -186,8 +195,8 @@ namespace NETMFBook1
             Canvas Border = new Canvas();
             window.AddChild(Border);
             //Border.DrawRectangle(Colors.Red, 1, 5, 10, 370, 205, 0, 0, Colors.White, 6500, 6500, Colors.White, 6500, 6500, 0);    //IQ 
-            Border.DrawRectangle(Colors.Red, 1, 5, 10, 370, 205, 0, 0, Colors.White, 6500, 6500, Colors.White, 6500, 6500, 0);      //S1
-
+            //Border.DrawRectangle(Colors.Red, 1, 5, 10, 370, 205, 0, 0, Colors.White, 6500, 6500, Colors.White, 6500, 6500, 0);      //S1
+            
             int StartX1 = 0x27;
             int StartY1 = 0x8;
             int StartX2 = 0x4;
@@ -197,19 +206,22 @@ namespace NETMFBook1
             AnaGauge1.MaxValue = 8000;
             AnaGauge1.Value = 0;
 
-            Gauges.AnalogueGauge AnaGauge2 = new Gauges.AnalogueGauge(window, dataLargeDial, digitalfont_small, digitalfont_big, "AnaGauge2", "TPS", 255, StartX1 + 147, StartY1, true);
+            Gauges.AnalogueGauge AnaGauge2 = new Gauges.AnalogueGauge(window, dataLargeDial, digitalfont_small, digitalfont_big, "AnaGauge2", "Boost (PSI)", 255, StartX1 + 147, StartY1, true);
             window.AddChild(AnaGauge2);
-            AnaGauge2.MaxValue = 100;
+            AnaGauge2.MaxValue = 15;
             AnaGauge2.Value = 0;
+            AnaGauge2.MinValue = -14;
 
             Gauges.AnalogueGauge AnaGauge3 = new Gauges.AnalogueGauge(window, dataSmallDial, digitalfont_small, digitalfont_big, "AnaGauge3", "ECT", 255, StartX2, StartY2, false);
             window.AddChild(AnaGauge3);
             AnaGauge3.MaxValue = 140;
+            AnaGauge3.MinValue = -40;
             AnaGauge3.Value = 0;
 
             Gauges.AnalogueGauge AnaGauge4 = new Gauges.AnalogueGauge(window, dataSmallDial, digitalfont_small, digitalfont_big, "AnaGauge4", "IAT", 255, StartX2 + 144, StartY2, false);
             window.AddChild(AnaGauge4);
             AnaGauge4.MaxValue = 100;
+            AnaGauge4.MinValue = -40;
             AnaGauge4.Value = 0;
 
             Gauges.AnalogueGauge AnaGauge5 = new Gauges.AnalogueGauge(window, dataSmallDial, digitalfont_small, digitalfont_big, "AnaGauge5", "ETH", 255, StartX2 + 144 + 144, StartY2, false);
@@ -227,11 +239,12 @@ namespace NETMFBook1
             SlantGauge2.MaxValue = 100;
             SlantGauge2.Value = 0;
 
-            Gauges.SlantedGauge SlantGauge3 = new Gauges.SlantedGauge(window2, bar_mask, smallfont, bigfont, "SlantGauge3", "MAP", 255, 5, 145);
+            Gauges.SlantedGauge SlantGauge3 = new Gauges.SlantedGauge(window2, bar_mask, smallfont, bigfont, "SlantGauge3", "Boost", 255, 5, 145);
             window2.AddChild(SlantGauge3);
-            SlantGauge3.MaxValue = 215;
+            SlantGauge3.MaxValue = 15;
             SlantGauge3.Value = 0;
-
+            
+            window.BackImage = new Bitmap(dataBackground, Bitmap.BitmapImageType.Gif);
 
             //Image Bar1 = (Image)window2.GetChildByName("bar1");
             //Bar1.Bitmap = new Bitmap(Bar1.Width, Bar1.Height);
@@ -337,7 +350,7 @@ namespace NETMFBook1
                 }
                 else
                 {
-                    AnaGauge1.Value =  RPM;
+                    AnaGauge1.Value = RPM; ;
                     oldRPM = RPM;
                 }
 
@@ -356,13 +369,13 @@ namespace NETMFBook1
                 }
                 else
                 {
-                    AnaGauge2.Value = TPS;
-                    oldTPS = TPS;
+                    AnaGauge2.Value = Boost;
+                    oldBoost = Boost;
                 }
 
                 if (BarGraph == true)
                 {
-                    if (((TimeNow[ModuleTimers.MAP] - LastTime[ModuleTimers.MAP]) / TimeSpan.TicksPerMillisecond) > 100)
+                    if (((TimeNow[ModuleTimers.MAP] - LastTime[ModuleTimers.MAP]) / TimeSpan.TicksPerMillisecond) > 25)
                     {
                         can2.SendMessage(reqMAP);
                         LastTime[ModuleTimers.MAP] = TimeNow[ModuleTimers.MAP];
@@ -371,7 +384,7 @@ namespace NETMFBook1
                     {
                         TimeNow[ModuleTimers.MAP] = System.DateTime.Now.Ticks;
                     }
-                    SlantGauge3.Value = MAP;
+                    SlantGauge3.Value = Boost;
                     oldMAP = MAP;
                 }
                 else
@@ -538,6 +551,7 @@ namespace NETMFBook1
                     oldETH = ETH;
                     oldSPKAdv = SPKAdv;
                     oldVSS = VSS;
+                    oldBoost = Boost;
                     firstrun = false;
                 }
                 if (received.ArbitrationId == 0x3FB)
@@ -582,8 +596,10 @@ namespace NETMFBook1
                     if (received.Data[2] == 0xE)
                         SPKAdv = (received.Data[3] / 2) - 64;
                 if (received.Data[2] == 0xB)
+                {
                     MAP = (received.Data[3] + 14);
-
+                    Boost = (int)(MAP * 0.145 - 14.5);
+                }
             }
         }
         private static void can_ErrorReceived(ControllerAreaNetwork sender, ControllerAreaNetwork.ErrorReceivedEventArgs e)
@@ -641,6 +657,8 @@ namespace NETMFBook1
             gauge.DrawRectangle(Colors.White, 0, (int)endx, startpointY, width - (int)endx, height, 0, 0, Colors.Black, startpointX, startpointY, Colors.Black, width, height, 65535);
             gauge.Flush();
         }
+
+
     }
 }
 

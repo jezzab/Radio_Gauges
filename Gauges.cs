@@ -123,7 +123,7 @@ namespace NETMFBook1
             {
                 Name = GaugeName;
                 Parent = window;
-              
+
                 X = 0;
                 Y = 0;
                 Width = window.Width;
@@ -198,8 +198,8 @@ namespace NETMFBook1
             int _XLoc = 0, _YLoc = 0;
             int _CurrentValue = 0;
             int _MaxValue = 100;
-            int length = 0,endx = 0, endy = 0;
-            int startpointX = 0,startpointY = 0;
+            int length = 0, endx = 0, endy = 0;
+            int startpointX = 0, startpointY = 0;
             float point = 0;
 
             Microsoft.SPOT.Presentation.Media.Color _StartColor = Colors.Green;
@@ -208,15 +208,15 @@ namespace NETMFBook1
 
             Microsoft.SPOT.Presentation.Media.Color _UnitsFontColor = Colors.White;
             Microsoft.SPOT.Presentation.Media.Color _DigitsFontColor = Colors.White;
-                   
-           private GHI.Glide.UI.Image _GaugeImage = new Image("Gauge",255,0,0,10,10);
+
+            private GHI.Glide.UI.Image _GaugeImage = new Image("Gauge", 255, 0, 0, 10, 10);
             Bitmap _GaugeBitmap = new Bitmap(10, 10);
             Bitmap _GaugeMaskBitmap = new Bitmap(10, 10);
 
 
 
             int TextWidth = 0, TextHeight = 0;
-            private  Microsoft.SPOT.Font FontUnits; //FontManager.GetFont(FontManager.FontType.droid_reg10);
+            private Microsoft.SPOT.Font FontUnits; //FontManager.GetFont(FontManager.FontType.droid_reg10);
             private Microsoft.SPOT.Font FontDigits; //FontManager.GetFont(FontManager.FontType.droid_reg08);
 
             //
@@ -255,7 +255,7 @@ namespace NETMFBook1
                     }
                     else
                     {
-                        _CurrentValue = value;                
+                        _CurrentValue = value;
                     }
                     this.Invalidate();
                 }
@@ -333,18 +333,18 @@ namespace NETMFBook1
             }
 
 
-            public SlantedGauge(DisplayObjectContainer window, byte[] GaugeMask,Font SmallFont, Font BigFont, string GaugeName, string Units, ushort alpha, int x, int y)
+            public SlantedGauge(DisplayObjectContainer window, byte[] GaugeMask, Font SmallFont, Font BigFont, string GaugeName, string Units, ushort alpha, int x, int y)
             {
-                
+
                 Name = GaugeName;
                 Parent = window;
-              
+
                 X = 0;
                 Y = 0;
                 Width = window.Width;
                 Height = window.Height;
 
-               _XLoc = x;
+                _XLoc = x;
                 _YLoc = y;
 
                 _Units = Units;
@@ -358,7 +358,7 @@ namespace NETMFBook1
                 _GaugeImage = new Image("Gauge", 255, _XLoc, _YLoc, _GaugeBitmap.Width, _GaugeBitmap.Height);// GaugeGIF;
                 _GaugeImage.Bitmap = _GaugeBitmap;// GaugeGIF.Bitmap;
                 _GaugeImage.Parent = this;
-                            
+
                 AddChild(_GaugeImage);
 
 
@@ -366,8 +366,8 @@ namespace NETMFBook1
 
             private void DrawGauge()
             {
-             //   _GaugeImage.Bitmap.Clear();
-             //   _GaugeImage.Bitmap.DrawImage(0, 0, _GaugeMaskBitmap, 0, 0, _GaugeMaskBitmap.Width, _GaugeMaskBitmap.Height); //_GaugeBitmap; //draw fresh gauge
+                //   _GaugeImage.Bitmap.Clear();
+                //   _GaugeImage.Bitmap.DrawImage(0, 0, _GaugeMaskBitmap, 0, 0, _GaugeMaskBitmap.Width, _GaugeMaskBitmap.Height); //_GaugeBitmap; //draw fresh gauge
             }
 
             private void UpdateText()
@@ -376,36 +376,36 @@ namespace NETMFBook1
                 //Bar1.Bitmap.DrawText("" + RPM, bigfont, Colors.White, 70, 5);
 
                 //Add units
-           //     FontUnitsCalc.ComputeExtent(_Units, out TextWidth, out TextHeight);
-               _GaugeImage.Bitmap.DrawText(_Units, FontUnits, _UnitsFontColor,0 ,0);
-             
-            //    //Add Digit display
-            //   FontDigitsCalc.ComputeExtent(_CurrentValue.ToString(), out TextWidth, out TextHeight);
-               _GaugeImage.Bitmap.DrawText(_CurrentValue.ToString(), FontDigits, _DigitsFontColor, (_GaugeImage.Width / 4), 5);
+                //     FontUnitsCalc.ComputeExtent(_Units, out TextWidth, out TextHeight);
+                _GaugeImage.Bitmap.DrawText(_Units, FontUnits, _UnitsFontColor, 0, 0);
+
+                //    //Add Digit display
+                //   FontDigitsCalc.ComputeExtent(_CurrentValue.ToString(), out TextWidth, out TextHeight);
+                _GaugeImage.Bitmap.DrawText(_CurrentValue.ToString(), FontDigits, _DigitsFontColor, (_GaugeImage.Width / 4), 5);
             }
 
-           
+
 
 
             private void DrawColouredBox()
             {
-                 endy = (startpointY + _GaugeImage.Height);
-                 endx = (int)((float)_CurrentValue * ((float)((_GaugeImage.Width) / (float)_MaxValue)));
+                endy = (startpointY + _GaugeImage.Height);
+                endx = (int)((float)_CurrentValue * ((float)((_GaugeImage.Width) / (float)_MaxValue)));
 
-                 _GaugeImage.Bitmap.DrawRectangle(Colors.White, 0, startpointX, startpointY, _GaugeImage.Width, _GaugeImage.Height, 0, 0, _StartColor, startpointX, (_GaugeImage.Height / 2), _EndColor, _GaugeImage.Width, (_GaugeImage.Height / 2), 65535);
-                 _GaugeImage.Bitmap.DrawRectangle(Colors.White, 0, endx, startpointY, _GaugeImage.Width - endx, _GaugeImage.Height, 0, 0, _EmptyColor, startpointX, startpointY, EmptyColor, _GaugeImage.Width, _GaugeImage.Height, 65535);
-                                
-              
+                _GaugeImage.Bitmap.DrawRectangle(Colors.White, 0, startpointX, startpointY, _GaugeImage.Width, _GaugeImage.Height, 0, 0, _StartColor, startpointX, (_GaugeImage.Height / 2), _EndColor, _GaugeImage.Width, (_GaugeImage.Height / 2), 65535);
+                _GaugeImage.Bitmap.DrawRectangle(Colors.White, 0, endx, startpointY, _GaugeImage.Width - endx, _GaugeImage.Height, 0, 0, _EmptyColor, startpointX, startpointY, EmptyColor, _GaugeImage.Width, _GaugeImage.Height, 65535);
+
+
             }
 
             private void DrawMask()
             {
                 _GaugeImage.Bitmap.DrawImage(0, 0, _GaugeMaskBitmap, 0, 0, _GaugeMaskBitmap.Width, _GaugeMaskBitmap.Height);
             }
-       
+
             public override void Render()
             {
-               
+
                 DrawGauge();
                 DrawColouredBox();
                 DrawMask();
@@ -452,14 +452,14 @@ namespace NETMFBook1
             Microsoft.SPOT.Presentation.Media.Color _DigitsFontColor = Colors.White;
             Microsoft.SPOT.Presentation.Media.Color _DialFontColor = Colors.Black;
 
-           
-           private GHI.Glide.UI.Image _GaugeImage = new Image("Gauge",255,0,0,10,10);
+
+            private GHI.Glide.UI.Image _GaugeImage = new Image("Gauge", 255, 0, 0, 10, 10);
             Bitmap _GaugeBitmap = new Bitmap(10, 10);
             Bitmap centerbig = new Bitmap(Resources.GetBytes(Resources.BinaryResources.center), Bitmap.BitmapImageType.Gif);
             Bitmap centersmall = new Bitmap(Resources.GetBytes(Resources.BinaryResources.centersmall), Bitmap.BitmapImageType.Gif);
 
             int TextWidth = 0, TextHeight = 0;
-            private  Microsoft.SPOT.Font FontUnitsCalc = FontManager.GetFont(FontManager.FontType.droid_reg10);
+            private Microsoft.SPOT.Font FontUnitsCalc = FontManager.GetFont(FontManager.FontType.droid_reg10);
             private Microsoft.SPOT.Font FontDigitsCalc = FontManager.GetFont(FontManager.FontType.droid_reg08);
 
             //
@@ -617,16 +617,16 @@ namespace NETMFBook1
 
             public AnalogueGauge(DisplayObjectContainer window, byte[] GaugeGIF, Font SmallFont, Font BigFont, string GaugeName, string Units, ushort alpha, int x, int y, bool IsBigGauge)
             {
-                
+
                 Name = GaugeName;
                 Parent = window;
-              
+
                 X = 0;
                 Y = 0;
                 Width = window.Width;
                 Height = window.Height;
 
-               _XLoc = x;
+                _XLoc = x;
                 _YLoc = y;
 
                 _Units = Units;
@@ -640,7 +640,7 @@ namespace NETMFBook1
                 _GaugeImage = new Image("Gauge", 255, _XLoc, _YLoc, _GaugeBitmap.Width, _GaugeBitmap.Height);// GaugeGIF;
                 _GaugeImage.Bitmap = new Bitmap(GaugeGIF, Bitmap.BitmapImageType.Gif);// GaugeGIF.Bitmap;
                 _GaugeImage.Parent = this;
-                            
+
                 AddChild(_GaugeImage);
 
 
@@ -648,8 +648,8 @@ namespace NETMFBook1
 
             private void DrawGauge()
             {
-             //   _GaugeImage.Bitmap.Clear();
-          
+                //   _GaugeImage.Bitmap.Clear();
+
                 _GaugeImage.Bitmap.DrawImage(0, 0, _GaugeBitmap, 0, 0, _GaugeBitmap.Width, _GaugeBitmap.Height); //_GaugeBitmap; //draw fresh gauge
             }
 
@@ -657,8 +657,8 @@ namespace NETMFBook1
             {
                 //Add units
                 FontUnitsCalc.ComputeExtent(_Units, out TextWidth, out TextHeight);
-                _GaugeImage.Bitmap.DrawText(_Units, FontUnitsCalc, _UnitsFontColor, (_GaugeImage.Width / 2) - (TextWidth / 2), (_GaugeImage.Height / 3) -4);
-             
+                _GaugeImage.Bitmap.DrawText(_Units, FontUnitsCalc, _UnitsFontColor, (_GaugeImage.Width / 2) - (TextWidth / 2), (_GaugeImage.Height / 3) - 4);
+
                 //Add Digit display
                 FontDigitsCalc.ComputeExtent(_CurrentValue.ToString(), out TextWidth, out TextHeight);
                 _GaugeImage.Bitmap.DrawText(_CurrentValue.ToString(), FontDigitsCalc, _DigitsFontColor, (_GaugeImage.Width / 2) - (TextWidth / 2), (_GaugeImage.Height - (_GaugeImage.Height / 3)));
@@ -667,8 +667,8 @@ namespace NETMFBook1
             private void DrawDialNumbers()
             {
                 //Add units
-               // FontSizeCalc.ComputeExtent(_Units, out TextWidth, out TextHeight);
-               // _GaugeImage.Bitmap.DrawText(_Units, FontSizeCalc, _UnitsFontColor, (_GaugeImage.Width / 2) - (TextWidth / 2), (_GaugeImage.Height - (_GaugeImage.Height / 3)) - TextHeight);
+                // FontSizeCalc.ComputeExtent(_Units, out TextWidth, out TextHeight);
+                // _GaugeImage.Bitmap.DrawText(_Units, FontSizeCalc, _UnitsFontColor, (_GaugeImage.Width / 2) - (TextWidth / 2), (_GaugeImage.Height - (_GaugeImage.Height / 3)) - TextHeight);
             }
 
 
@@ -680,16 +680,16 @@ namespace NETMFBook1
                 Needlelength = _GaugeImage.Width / 3;
 
 
-            
+
 
 
                 float TopVal = _CurrentValue + System.Math.Abs(_MinValue);
                 float bottomVal = _MaxValue - _MinValue; //so that is the total range
                 bottomVal = bottomVal / 245;
-              
-               // Needlepoint = (float)(System.Math.Abs(_CurrentValue)) / ((float)(((System.Math.Abs(_MinValue)) + _MaxValue) / 245));         //245deg max sweep max=max units (step size calc)
+
+                // Needlepoint = (float)(System.Math.Abs(_CurrentValue)) / ((float)(((System.Math.Abs(_MinValue)) + _MaxValue) / 245));         //245deg max sweep max=max units (step size calc)
                 Needlepoint = TopVal / bottomVal;
-                
+
                 //short needle for small gauge
                 float angle = 149 + Needlepoint;                                       //153deg is start point angle
                 float radians;
@@ -701,9 +701,9 @@ namespace NETMFBook1
                 NeedleEndx += NeedlestartpointX;                                   //center point
                 NeedleEndy += NeedlestartpointY;                                   //center point
 
-            //    _TempGaugeBitmap = _GaugeImage.Bitmap;
-             //   SmoothLine.drawLineRLPFix((float)NeedlestartpointX, (float)NeedlestartpointY, (float)NeedleEndx, (float)NeedleEndy, ref  _TempGaugeBitmap, Colors.Red, (float)1);
-             //   _GaugeImage.Bitmap = _TempGaugeBitmap;
+                //    _TempGaugeBitmap = _GaugeImage.Bitmap;
+                //   SmoothLine.drawLineRLPFix((float)NeedlestartpointX, (float)NeedlestartpointY, (float)NeedleEndx, (float)NeedleEndy, ref  _TempGaugeBitmap, Colors.Red, (float)1);
+                //   _GaugeImage.Bitmap = _TempGaugeBitmap;
 
                 _GaugeImage.Bitmap.DrawLine(Colors.Red, 1, NeedlestartpointX, NeedlestartpointY, NeedleEndx, NeedleEndy);
 
@@ -711,10 +711,10 @@ namespace NETMFBook1
                 else { _GaugeImage.Bitmap.DrawImage(NeedlestartpointX - (centersmall.Width / 2), NeedlestartpointY - (centersmall.Height / 2), centersmall, 0, 0, centersmall.Width, centersmall.Height); }
 
             }
-       
+
             public override void Render()
             {
-               
+
                 DrawGauge();
                 UpdateText();
                 DrawDialNumbers();
@@ -732,7 +732,7 @@ namespace NETMFBook1
 
 
 
-     
+
 
     }
 
