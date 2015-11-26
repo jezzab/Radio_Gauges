@@ -49,6 +49,7 @@
     <Reference Include="GHI.Glide, Version=4.3.7.10, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="GHI.Hardware, Version=4.3.7.10, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="GHI.Pins, Version=4.3.7.10, Culture=neutral, processorArchitecture=MSIL" />
+    <Reference Include="GHI.SQLite, Version=4.3.7.10, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="GHI.Usb, Version=4.3.7.10, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.SPOT.Graphics" />
     <Reference Include="Microsoft.SPOT.Hardware" />

@@ -16,7 +16,7 @@ public class Program
     public static MassStorage usb_storage;
     public static string rootDirectory;
 
-    public static void Main()
+    public static void Main1()
     {
         //Look for USB.. setup event handles
         RemovableMedia.Insert += new InsertEventHandler(RemovableMedia_Insert); //event when inserted

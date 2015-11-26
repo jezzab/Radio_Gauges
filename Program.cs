@@ -30,9 +30,9 @@ public static class ModuleTimers
 {
     public static int RPM = 0;
     public static int TPS = 1;
-    public static int SWA = 2;
-    public static int YAW = 3;
-    public static int LAT = 4;
+    public static int Spark = 2;
+    public static int ECT = 3;
+    public static int IAT = 4;
     public static int MAP = 5;
     public static int ETH = 6;
     public static int Nav = 7;
@@ -54,6 +54,9 @@ namespace NETMFBook1
         public static MassStorage usb_storage;
         public static string rootDirectory;
 
+        public static ControllerAreaNetwork.Message flowControl = new ControllerAreaNetwork.Message();
+        public static ControllerAreaNetwork  can2 = new ControllerAreaNetwork(ControllerAreaNetwork.Channel.Two, ControllerAreaNetwork.Speed.Kbps500);
+
         static ControllerAreaNetwork.Message received = null;
         static string data = string.Empty;
         public static GHI.Glide.Geom.Point touches;
@@ -61,30 +64,18 @@ namespace NETMFBook1
         public static int oldY;
         public static int X;
         public static int Y;
-        public static int RPM = 0;                          //Setup all variables for the PIDs
-        public static int oldRPM = -1;
-        public static int ECT = -1;
-        public static int oldECT = 0;
-        public static int IAT = -1;
-        public static int oldIAT;
-        public static int TPS;
-        public static int oldTPS = -1;
-        public static int SWA;
-        public static int oldSWA = 0;
-        public static int LatAccel;
-        public static int oldLatAccel = 0;
-        public static int Yaw;
-        public static int oldYaw = 0;
-        public static int MAP;
-        public static int oldMAP = 0;
-        public static int Boost;
-        public static int oldBoost = 0;
-        public static int ETH;
-        public static int oldETH = -1;
-        public static int SPKAdv;
-        public static int oldSPKAdv = -1;
-        public static int VSS;
-        public static int oldVSS = 0;
+        public static int RPM = 0, oldRPM = -1;
+        public static int ECT = -1, oldECT = 0;
+        public static int IAT = -1, oldIAT;
+        public static int TPS, oldTPS = -1;
+        public static int MAP, oldMAP = 0;
+        public static int Boost, oldBoost = 0;
+        public static int ETH, oldETH = -1;
+        public static int SPKAdv, oldSPKAdv = -1;
+        public static int VSS, oldVSS = 0;
+        public static double KR, oldKR = 0;
+        public static double AFR, oldAFR = 0;
+
         public static bool touchedOn = false;
         public static bool touchedOff = false;
         public static bool firstrun = true;
@@ -101,7 +92,7 @@ namespace NETMFBook1
         {
             // Overclock G120 w00t
             var EMCCLKSEL = new GHI.Processor.Register(0x400FC100);
-            EMCCLKSEL.ClearBits(1 << 0); 
+            //EMCCLKSEL.ClearBits(1 << 0); 
             
             //Look for USB.. setup event handles
             RemovableMedia.Insert += new InsertEventHandler(RemovableMedia_Insert); //event when inserted
@@ -159,12 +150,12 @@ namespace NETMFBook1
             GHI.IO.ControllerAreaNetwork.Timings GMLANTimings = new ControllerAreaNetwork.Timings(0, 0xF, 0x8, 0x4B, 1);
             GHI.IO.ControllerAreaNetwork.Timings HSCANTimings = new ControllerAreaNetwork.Timings(0, 14, 5, 10, 1);
             var can1 = new ControllerAreaNetwork(ControllerAreaNetwork.Channel.One, GMLANTimings);
-            var can2 = new ControllerAreaNetwork(ControllerAreaNetwork.Channel.Two, ControllerAreaNetwork.Speed.Kbps500);
+            //var can2 = new ControllerAreaNetwork(ControllerAreaNetwork.Channel.Two, ControllerAreaNetwork.Speed.Kbps500);
 
-            //CAN Bus Explicit Filtersx
-            uint[] filter1 = { 0x102F8080, 0x102E0080 };          //GMLAN
-            uint[] filter2 = { 0xC9, 0x4C1, 0x3FB, 0x7E8, 0x3E9 };       //HSCAN
-            //uint[] filter2 = { 0xC9, 0x4C1, 0x1E5, 0x1E9 };     //HSCAN
+            //CAN Bus Explicit Filters
+            uint[] filter1 = { 0x102F8080, 0x102E0080 };            //GMLAN
+            uint[] filter2 = { 0x7E8 };  //HSCAN
+            //uint[] filter2 = { 0xC9, 0x4C1, 0x3FB, 0x7E8, 0x3E9 };  //HSCAN PPEI
 
             //Set screen dimensions
             int videoOutWidth = 395;
@@ -178,8 +169,6 @@ namespace NETMFBook1
             
             Debug.Print("Setting up Glide Touch system...");
             GlideTouch.Initialize();
-
-         //   SmoothLine.initRLP();
 
             //Setup the fonts
             Debug.Print("Loading fonts...");
@@ -206,28 +195,28 @@ namespace NETMFBook1
             AnaGauge1.MaxValue = 8000;
             AnaGauge1.Value = 0;
 
-            Gauges.AnalogueGauge AnaGauge2 = new Gauges.AnalogueGauge(window, dataLargeDial, digitalfont_small, digitalfont_big, "AnaGauge2", "Boost (PSI)", 255, StartX1 + 147, StartY1, true);
+            Gauges.AnalogueGauge AnaGauge2 = new Gauges.AnalogueGauge(window, dataLargeDial, digitalfont_small, digitalfont_big, "AnaGauge2", "MAP", 255, StartX1 + 147, StartY1, true);
             window.AddChild(AnaGauge2);
-            AnaGauge2.MaxValue = 15;
+            AnaGauge2.MaxValue = 205;
             AnaGauge2.Value = 0;
-            AnaGauge2.MinValue = -14;
+            AnaGauge2.MinValue = 0;
 
-            Gauges.AnalogueGauge AnaGauge3 = new Gauges.AnalogueGauge(window, dataSmallDial, digitalfont_small, digitalfont_big, "AnaGauge3", "ECT", 255, StartX2, StartY2, false);
+            Gauges.AnalogueGauge AnaGauge3 = new Gauges.AnalogueGauge(window, dataSmallDial, digitalfont_small, digitalfont_big, "AnaGauge3", "SparkAdv", 255, StartX2, StartY2, false);
             window.AddChild(AnaGauge3);
-            AnaGauge3.MaxValue = 140;
-            AnaGauge3.MinValue = -40;
+            AnaGauge3.MaxValue = 64;
+            AnaGauge3.MinValue = -64;
             AnaGauge3.Value = 0;
 
-            Gauges.AnalogueGauge AnaGauge4 = new Gauges.AnalogueGauge(window, dataSmallDial, digitalfont_small, digitalfont_big, "AnaGauge4", "IAT", 255, StartX2 + 144, StartY2, false);
+            Gauges.AnalogueGauge AnaGauge4 = new Gauges.AnalogueGauge(window, dataSmallDial, digitalfont_small, digitalfont_big, "AnaGauge4", "ECT", 255, StartX2 + 144, StartY2, false);
             window.AddChild(AnaGauge4);
             AnaGauge4.MaxValue = 100;
             AnaGauge4.MinValue = -40;
             AnaGauge4.Value = 0;
 
-            Gauges.AnalogueGauge AnaGauge5 = new Gauges.AnalogueGauge(window, dataSmallDial, digitalfont_small, digitalfont_big, "AnaGauge5", "ETH", 255, StartX2 + 144 + 144, StartY2, false);
+            Gauges.AnalogueGauge AnaGauge5 = new Gauges.AnalogueGauge(window, dataSmallDial, digitalfont_small, digitalfont_big, "AnaGauge5", "IAT", 255, StartX2 + 144 + 144, StartY2, false);
             window.AddChild(AnaGauge5);
             AnaGauge5.MaxValue = 100;
-            AnaGauge5.Value = 0;
+            AnaGauge5.Value = -40;
 
             Gauges.SlantedGauge SlantGauge1 = new Gauges.SlantedGauge(window2, bar_mask, smallfont, bigfont, "SlantGauge1", "RPM", 255, 5, 5);
             window2.AddChild(SlantGauge1);
@@ -245,17 +234,6 @@ namespace NETMFBook1
             SlantGauge3.Value = 0;
             
             window.BackImage = new Bitmap(dataBackground, Bitmap.BitmapImageType.Gif);
-
-            //Image Bar1 = (Image)window2.GetChildByName("bar1");
-            //Bar1.Bitmap = new Bitmap(Bar1.Width, Bar1.Height);
-            //Image Bar2 = (Image)window2.GetChildByName("bar2");
-            //Bar2.Bitmap = new Bitmap(Bar1.Width, Bar1.Height);
-
-
-            //Draw the screen the first time
-            //Debug.Print("Drawing gauges and labels...");
-            //Bar1.Bitmap.DrawText("RPM", smallfont, Colors.White, 0, 0);
-            //Bar2.Bitmap.DrawText("TPS", smallfont, Colors.White, 0, 0);
 
             //Setup CAN Events, enable CAN and Filters
             Debug.Print("Enabling HSCAN and GMLAN...");
@@ -276,22 +254,76 @@ namespace NETMFBook1
             PingNav.Length = 2;
             PingNav.IsExtendedId = true;
 
-            //Request Spark Advane PID Test
+            //Request Spark Advance PID 
             ControllerAreaNetwork.Message reqSpark = new ControllerAreaNetwork.Message();
-            reqSpark.ArbitrationId = 0x7DF;
-            reqSpark.Data = new byte[] { 0x02, 0x01, 0x0E, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA };
+            reqSpark.ArbitrationId = 0x7E0;
+            reqSpark.Data = new byte[] { 0x03, 0x22, 0x00, 0x0E, 0xAA, 0xAA, 0xAA, 0xAA };
             reqSpark.Length = 8;
             reqSpark.IsExtendedId = false;
-            can2.SendMessage(reqSpark);
+            //can2.SendMessage(reqSpark);
 
             //Request Manifold Pressure (MAP) PID
             ControllerAreaNetwork.Message reqMAP = new ControllerAreaNetwork.Message();
-            reqMAP.ArbitrationId = 0x7DF;
-            reqMAP.Data = new byte[] { 0x02, 0x01, 0x0B, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA };
+            reqMAP.ArbitrationId = 0x7E0;
+            reqMAP.Data = new byte[] { 0x03, 0x22, 0x00, 0x0B, 0xAA, 0xAA, 0xAA, 0xAA };
             reqMAP.Length = 8;
             reqMAP.IsExtendedId = false;
-            can2.SendMessage(reqMAP);
+            //can2.SendMessage(reqMAP);
 
+            //Request Engine Speed (RPM) PID
+            ControllerAreaNetwork.Message reqRPM = new ControllerAreaNetwork.Message();
+            reqRPM.ArbitrationId = 0x7E0;
+            reqRPM.Data = new byte[] { 0x03, 0x22, 0x00, 0x0C, 0xAA, 0xAA, 0xAA, 0xAA };
+            reqRPM.Length = 8;
+            reqRPM.IsExtendedId = false;
+
+            //Request Knock Retard PID
+            ControllerAreaNetwork.Message reqKNKRET = new ControllerAreaNetwork.Message();
+            reqKNKRET.ArbitrationId = 0x7E0;
+            reqKNKRET.Data = new byte[] { 0x03, 0x22, 0x12, 0xD9, 0xAA, 0xAA, 0xAA, 0xAA };
+            reqKNKRET.Length = 8;
+            reqKNKRET.IsExtendedId = false;
+
+            //Request Vehicle Speed Sensor (VSS) PID
+            ControllerAreaNetwork.Message reqVSS = new ControllerAreaNetwork.Message();
+            reqVSS.ArbitrationId = 0x7E0;
+            reqVSS.Data = new byte[] { 0x03, 0x22, 0x00, 0x0D, 0xAA, 0xAA, 0xAA, 0xAA };
+            reqVSS.Length = 8;
+            reqVSS.IsExtendedId = false;
+
+            //Request Throttle Position Sensor PID (Pedal only)
+            ControllerAreaNetwork.Message reqTPS = new ControllerAreaNetwork.Message();
+            reqTPS.ArbitrationId = 0x7E0;
+            reqTPS.Data = new byte[] { 0x03, 0x22, 0x12, 0xD9, 0xAA, 0xAA, 0xAA, 0xAA };
+            reqTPS.Length = 8;
+            reqTPS.IsExtendedId = false;
+
+            //Request Engine Coolant Temp [ECT]
+            ControllerAreaNetwork.Message reqECT = new ControllerAreaNetwork.Message();
+            reqECT.ArbitrationId = 0x7E0;
+            reqECT.Data = new byte[] { 0x03, 0x22, 0x00, 0x05, 0xAA, 0xAA, 0xAA, 0xAA };
+            reqECT.Length = 8;
+            reqECT.IsExtendedId = false;
+
+            //Request Intake Air Temp [IAT]
+            ControllerAreaNetwork.Message reqIAT = new ControllerAreaNetwork.Message();
+            reqIAT.ArbitrationId = 0x7E0;
+            reqIAT.Data = new byte[] { 0x03, 0x22, 0x00, 0x0F, 0xAA, 0xAA, 0xAA, 0xAA };
+            reqIAT.Length = 8;
+            reqIAT.IsExtendedId = false;
+
+            //Request E38 AFR DMA PID
+            ControllerAreaNetwork.Message reqAFR_DMA = new ControllerAreaNetwork.Message();
+            reqAFR_DMA.ArbitrationId = 0x7E0;
+            reqAFR_DMA.Data = new byte[] { 0x07, 0x23, 0x00, 0x24, 0x23, 0xFA, 0x00, 0x04 };
+            reqAFR_DMA.Length = 8;
+            reqAFR_DMA.IsExtendedId = false;
+
+            //Send Flow Control
+            flowControl.ArbitrationId = 0x7E0;
+            flowControl.Data = new byte[] { 0x30, 0x00, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA };
+            flowControl.Length = 3;
+            flowControl.IsExtendedId = false;
 
             //send it the first time to fire things up if S1
             if (IsS1) can1.SendMessage(PingNav);
@@ -305,14 +337,6 @@ namespace NETMFBook1
             //Run forever. 100 miles and running [NWA FTW]......
             while (true)
             {
-                //RPM += 50;
-                //TPS += 1;
-                //ECT += 1;
-                //IAT += 1;
-                //ETH += 1;
-                //Thread.Sleep(20);
-                //can2.SendMessage(reqSpark);
-
                 //Change screens using slide if button pressed
                 if (BarGraph == true)
                     if (Glide.MainWindow == window) { Tween.SlideWindow(window, window2, Direction.Left); }
@@ -322,7 +346,7 @@ namespace NETMFBook1
                     if (Glide.MainWindow == window2) { Tween.SlideWindow(window2, window, Direction.Right); }
                     else { }
 
-                if (IsS1) //NAV
+                if (IsS1) //Nav RGBS input enable packet for Series1
                 {
                     if (((TimeNow[ModuleTimers.Nav] - LastTime[ModuleTimers.Nav]) / TimeSpan.TicksPerMillisecond) > 5000) //send ping packet every 5sec
                     {
@@ -335,161 +359,111 @@ namespace NETMFBook1
                     }
                 }
 
+                //CAN Request Timers
+                if (((TimeNow[ModuleTimers.RPM] - LastTime[ModuleTimers.RPM]) / TimeSpan.TicksPerMillisecond) > 25)
+                {
+                    can2.SendMessage(reqRPM);
+                    LastTime[ModuleTimers.RPM] = TimeNow[ModuleTimers.RPM];
+                }
+                else
+                {
+                    TimeNow[ModuleTimers.RPM] = System.DateTime.Now.Ticks;
+                }
+                if (((TimeNow[ModuleTimers.MAP] - LastTime[ModuleTimers.MAP]) / TimeSpan.TicksPerMillisecond) > 25)
+                {
+                    can2.SendMessage(reqMAP);
+                    LastTime[ModuleTimers.MAP] = TimeNow[ModuleTimers.MAP];
+                }
+                else
+                {
+                    TimeNow[ModuleTimers.MAP] = System.DateTime.Now.Ticks;
+                }
+                if (((TimeNow[ModuleTimers.Spark] - LastTime[ModuleTimers.Spark]) / TimeSpan.TicksPerMillisecond) > 25)
+                {
+                    can2.SendMessage(reqSpark);
+                    LastTime[ModuleTimers.Spark] = TimeNow[ModuleTimers.Spark];
+                }
+                else
+                {
+                    TimeNow[ModuleTimers.Spark] = System.DateTime.Now.Ticks;
+                }
+                if (((TimeNow[ModuleTimers.ECT] - LastTime[ModuleTimers.ECT]) / TimeSpan.TicksPerMillisecond) > 5000)
+                {
+                    can2.SendMessage(reqECT);
+                    LastTime[ModuleTimers.ECT] = TimeNow[ModuleTimers.ECT];
+                }
+                else
+                {
+                    TimeNow[ModuleTimers.ECT] = System.DateTime.Now.Ticks;
+                }
+                if (((TimeNow[ModuleTimers.IAT] - LastTime[ModuleTimers.IAT]) / TimeSpan.TicksPerMillisecond) > 3000)
+                {
+                    can2.SendMessage(reqIAT);
+                    LastTime[ModuleTimers.IAT] = TimeNow[ModuleTimers.IAT];
+                }
+                else
+                {
+                    TimeNow[ModuleTimers.IAT] = System.DateTime.Now.Ticks;
+                }
 
-
+                //Gauge Updates
                 if (BarGraph == true)
                 {
-                    //DrawBar(RPM, 8000, 0, 4, 46, 352, Bar1.Bitmap);               //Unremark to draw new bars [TPS is fine]
-                    //Bar1.Bitmap.Flush();
-                    //Bar1.Bitmap.DrawImage(0, 0, bar_mask, 0, 0, 350,50);
-                    //Bar1.Bitmap.DrawText("RPM", smallfont, Colors.White, 0, 0);
-                    //Bar1.Bitmap.DrawText("" + RPM, bigfont, Colors.White, 70, 5);
-                    //Bar1.Invalidate();
                     SlantGauge1.Value = RPM;
                     oldRPM = RPM;
                 }
                 else
                 {
-                    AnaGauge1.Value = RPM; ;
+                    AnaGauge1.Value = RPM;
                     oldRPM = RPM;
                 }
 
-
-
                 if (BarGraph == true)
                 {
-                    //DrawBar(TPS, 100, 0, 4, 46, 352, Bar2.Bitmap);               //Unremark to draw new bars [TPS is fine]
-                    //Bar2.Bitmap.Flush();
-                    //Bar2.Bitmap.DrawImage(0, 0, bar_mask, 0, 0, 350, 50);
-                    //Bar2.Bitmap.DrawText("TPS", smallfont, Colors.White, 0, 0);
-                    //Bar2.Bitmap.DrawText("" + TPS, bigfont, Colors.White, 70, 5);
-                    //Bar2.Invalidate();
-                    SlantGauge2.Value = TPS;
-                    oldTPS = TPS;
-                }
-                else
-                {
-                    AnaGauge2.Value = Boost;
-                    oldBoost = Boost;
-                }
-
-                if (BarGraph == true)
-                {
-                    if (((TimeNow[ModuleTimers.MAP] - LastTime[ModuleTimers.MAP]) / TimeSpan.TicksPerMillisecond) > 25)
-                    {
-                        can2.SendMessage(reqMAP);
-                        LastTime[ModuleTimers.MAP] = TimeNow[ModuleTimers.MAP];
-                    }
-                    else
-                    {
-                        TimeNow[ModuleTimers.MAP] = System.DateTime.Now.Ticks;
-                    }
-                    SlantGauge3.Value = Boost;
+                    SlantGauge2.Value = MAP;
                     oldMAP = MAP;
                 }
                 else
                 {
-                    //AnaGauge2.Value = TPS;
+                    AnaGauge2.Value = MAP;
                     oldMAP = MAP;
                 }
 
-
-                if (oldECT != ECT)
+                if (BarGraph == true)
                 {
-                    if (BarGraph == true)
-                    { }
-                    else
-                    {
-                        AnaGauge3.Value = ECT;
-                        oldECT = ECT;
-                    }
+                    SlantGauge3.Value = SPKAdv;
+                    oldSPKAdv = SPKAdv;
+                }
+                else
+                {
+                    AnaGauge3.Value = SPKAdv;
+                    oldSPKAdv = SPKAdv;
                 }
 
-                if (oldIAT != IAT)
+                if (BarGraph == true)
                 {
-                    if (BarGraph == true)
-                    { }
-                    else
-                    {
-                        AnaGauge4.Value = IAT;
-                        oldIAT = IAT;
-                    }
+                }
+                else
+                {
+                    AnaGauge4.Value = ECT;
+                    oldECT = ECT;
                 }
 
-                if (oldETH != ETH)
+                if (BarGraph == true)
+                { }
+                else
                 {
-                    if (BarGraph == true)
-                    { }
-                    else
-                    {
-                        AnaGauge5.Value = ETH;
-                        oldETH = ETH;
-                    }
+                    AnaGauge4.Value = IAT;
+                    oldIAT = IAT;
                 }
-
-                if (oldSPKAdv != SPKAdv)
+                
+                if (BarGraph == true)
+                { }
+                else
                 {
-
-                    //Debug.Print("Spark Adv: " + SPKAdv);
-                    //can2.SendMessage(reqSpark);
-                }
-                /*
-                if (oldSWA != SWA)
-                {
-                    if (((TimeNow[ModuleTimers.SWA] - LastTime[ModuleTimers.SWA]) / TimeSpan.TicksPerMillisecond) > UpdateRate)
-                    {
-                        txtSWA.Text = SWA.ToString();
-                        txtSWA.Invalidate();
-                        can2.DiscardIncomingMessages();
-                        LastTime[ModuleTimers.SWA] = TimeNow[ModuleTimers.SWA];
-                    }
-                    else
-                    {
-                        TimeNow[ModuleTimers.SWA] = System.DateTime.Now.Ticks;
-                    }
-                }
-                if (oldYaw != Yaw)
-                {
-                    if (((TimeNow[ModuleTimers.YAW] - LastTime[ModuleTimers.YAW]) / TimeSpan.TicksPerMillisecond) > UpdateRate)
-                    {
-                        txtYaw.Text = Yaw.ToString();
-                        txtYaw.Invalidate();
-                        can2.DiscardIncomingMessages();
-                        LastTime[ModuleTimers.YAW] = TimeNow[ModuleTimers.YAW];
-                    }
-                        else
-                    {
-                        TimeNow[ModuleTimers.YAW] = System.DateTime.Now.Ticks;
-                    }
-                }
-                if (oldLatAccel != LatAccel)
-                {
-                    if (((TimeNow[ModuleTimers.LAT] - LastTime[ModuleTimers.LAT]) / TimeSpan.TicksPerMillisecond) > UpdateRate)
-                    {
-                        txtLatAccel.Text = LatAccel.ToString();
-                        txtLatAccel.Invalidate();
-                        can2.DiscardIncomingMessages();
-                        LastTime[ModuleTimers.LAT] = TimeNow[(int)ModuleTimers.LAT];
-                    }
-                    else
-                    {
-                        TimeNow[ModuleTimers.LAT] = System.DateTime.Now.Ticks;
-                    }
-                } 
-                 
-                    if (((TimeNow[ModuleTimers.MAP] - LastTime[ModuleTimers.MAP]) / TimeSpan.TicksPerMillisecond) > UpdateRate)
-                    {
-                        //can2.SendMessage(req_map);
-                        LastTime[ModuleTimers.MAP] = TimeNow[ModuleTimers.MAP];
-                        Debug.Print("MAP: " + MAP);
-                    }
-                    else
-                    {
-                        TimeNow[ModuleTimers.MAP] = System.DateTime.Now.Ticks;
-                    }
-                  
-                    */
-
+                    // AnaGauge5.Value = ETH;
+                    oldETH = ETH;
+                }            
             }
         }
         private static void can1_MessageAvailable(ControllerAreaNetwork sender, ControllerAreaNetwork.MessageAvailableEventArgs e)
@@ -516,15 +490,20 @@ namespace NETMFBook1
                         oldX = X;
                         oldY = Y;
                         GlideTouch.RaiseTouchDownEvent(null, new TouchEventArgs(touches));
+                        if (X < 100)
+                            BarGraph = false;
+                        if (X > 300)
+                            BarGraph = true;
+
                     }
                 }
                 if (received.ArbitrationId == 0x102E0080)   //Nav buttons pressed on S1
                 {
-                    if (received.Data[2] == 0x01)
+                    if (received.Data[2] == 0x01) //Button 1 Pressed
                     {
                         BarGraph = false;
                     }
-                    if (received.Data[2] == 0x02)
+                    if (received.Data[2] == 0x02) //Button 2 Pressed
                     {
                         BarGraph = true;
                     }
@@ -545,60 +524,45 @@ namespace NETMFBook1
                     oldECT = ECT;
                     oldIAT = IAT;
                     oldTPS = TPS;
-                    oldSWA = SWA;
-                    oldYaw = Yaw;
                     oldMAP = MAP;
                     oldETH = ETH;
                     oldSPKAdv = SPKAdv;
                     oldVSS = VSS;
                     oldBoost = Boost;
+                    oldAFR = AFR;
+                    oldKR = KR;
+                    
                     firstrun = false;
                 }
-                if (received.ArbitrationId == 0x3FB)
-                {
-                    ETH = (received.Data[1] * 100) / 255;
-                }
-                if (received.ArbitrationId == 0xC9)
-                {
-                    RPM = (((received.Data[1] * 0x100) + received.Data[2]) / 4);
-                    TPS = (received.Data[4] * 100) / 255;
-                }
-                if (received.ArbitrationId == 0x4C1)
-                {
-                    ECT = received.Data[2] - 40;
-                    IAT = received.Data[3] - 40;
-                }
-                if ((received.ArbitrationId == 0x7E8) && (received.Data[2] == 0xB))
-                {
-                    MAP = received.Data[2] + 14;
-                }
-                if (received.ArbitrationId == 0x3E9)
-                {
-                    VSS = (int)(((received.Data[0] * 0x100) + received.Data[1]) * 0.015625);
-                    //Debug.Print("VSS: " + VSS);
-                }
-                if (received.ArbitrationId == 0x1E5)
-                {
-                    SWA = ((received.Data[5] * 0x100) + received.Data[6]);
-                    if (SWA > 0x8000)
-                    {
-                        SWA = ~SWA;                         //process negative degrees
-                    }
-                    SWA = SWA / 16;
-                }
-                if (received.ArbitrationId == 0x1E9)
-                {
-                    Yaw = received.Data[4] / 16;
-                    LatAccel = received.Data[0] / 64;       //metres per sec acceleration
-                    //LatAccel = LatAccel / 9.8067;         //1 Gforce = 9.80665m/sec acceleration
-                }
+
                 if (received.ArbitrationId == 0x7E8)
-                    if (received.Data[2] == 0xE)
-                        SPKAdv = (received.Data[3] / 2) - 64;
-                if (received.Data[2] == 0xB)
                 {
-                    MAP = (received.Data[3] + 14);
-                    Boost = (int)(MAP * 0.145 - 14.5);
+                    if (received.Data[0] == 0x10)                               //Send flow control packet           
+                        sender.SendMessage(flowControl);
+                    if ((received.Data[0] == 0x10) && (received.Data[2] == 0x62)) //Mode23 DMA PID Frame 1
+                        AFR = (float)received.Data[7] * (float)0.125;
+                    if(received.Data[1] == 0x62)                                //Check is Mode22 Response
+                    {
+                        //if (received.Data[3] == 0x03)                         //Fuel System Status [CL or OL] Bit Encoded
+                        //    FuelStatus = (received.Data[4];
+                        if ((received.Data[2] == 0x00)&&(received.Data[3] == 0x05))                       //Engine Coolant Temp [ECT]
+                            ECT = received.Data[4] - 40;
+                        if ((received.Data[2] == 0x00)&&(received.Data[3] == 0x0B))                       //Manifold Pressure
+                        {
+                            MAP = (received.Data[4] + 14);
+                            Boost = (int)(MAP * 0.145 - 14.5);                                            //Convert to Boost PSI
+                        }
+                        if ((received.Data[2] == 0x00)&&(received.Data[3] == 0x0C))                       //Engine Speed [RPM]
+                            RPM = (((received.Data[4] * 0x100) + received.Data[5]) / 4);
+                        if ((received.Data[2] == 0x00)&&(received.Data[3] == 0x0D))                       //Vehicle Speed [VSS]
+                            VSS = received.Data[4];
+                        if ((received.Data[2] == 0x00)&&(received.Data[3] == 0x0E))                       //Spark Advance
+                            SPKAdv = (received.Data[4] / 2) - 64;
+                        if ((received.Data[2] == 0x00)&&(received.Data[3] == 0x0F))                       //Intake Air Temp [IAT]
+                            IAT = received.Data[4] - 40;
+                        if ((received.Data[2] == 0x12)&&(received.Data[3] == 0xD9))                       //Knock Retard [KR]
+                            KR = System.Math.Round(((double)received.Data[4] * 0.17578)*100.0)/100.0; 
+                    }
                 }
             }
         }
