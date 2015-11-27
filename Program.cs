@@ -133,6 +133,9 @@ namespace NETMFBook1
             //Timing for CTS flag
             long CTSLastTime = 0;
 
+            //PID to Send
+            int PIDtoUpdate = 0;
+
             Tween.NumSteps.SlideWindow = 25;
 
             if (IsS1) Debug.Print("Radio is a S1");
@@ -353,6 +356,7 @@ namespace NETMFBook1
                 }
 
 
+
                 //Check CTS
                 if (CTS == false)
                 {
@@ -366,59 +370,62 @@ namespace NETMFBook1
                 //CAN Request Timers
                 if (CTS == true)
                 {
-                    if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.RPM]) / TimeSpan.TicksPerMillisecond) > 25)
+                    switch (PIDtoUpdate)
                     {
-                        CTS = false;
-                        can2.SendMessage(reqRPM);
-                        LastTime[ModuleTimers.RPM] = System.DateTime.Now.Ticks;
-                       
-                    }
+                        case 0:
+                            if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.RPM]) / TimeSpan.TicksPerMillisecond) > 25)
+                            {
+                                CTS = false;
+                                can2.SendMessage(reqRPM);
+                                LastTime[ModuleTimers.RPM] = System.DateTime.Now.Ticks;
+                            }
+                            PIDtoUpdate += 1;
+                            break;
+
+                        case 1:
+                            if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.MAP]) / TimeSpan.TicksPerMillisecond) > 25)
+                            {
+                                CTS = false;
+                                can2.SendMessage(reqMAP);
+                                LastTime[ModuleTimers.MAP] = System.DateTime.Now.Ticks;
+
+                            }
+                            PIDtoUpdate += 1;
+                            break;
+                        case 2:
+                            if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.Spark]) / TimeSpan.TicksPerMillisecond) > 25)
+                            {
+                                CTS = false;
+                                can2.SendMessage(reqSpark);
+                                LastTime[ModuleTimers.Spark] = System.DateTime.Now.Ticks;
+
+                            }
+                            PIDtoUpdate += 1;
+                            break;
+                        case 3:
+                            if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.ECT]) / TimeSpan.TicksPerMillisecond) > 5000)
+                            {
+                                CTS = false;
+                                can2.SendMessage(reqECT);
+                                LastTime[ModuleTimers.ECT] = System.DateTime.Now.Ticks;
+                            }
+                            PIDtoUpdate += 1;
+                            break;
+                        case 4:
+                            if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.IAT]) / TimeSpan.TicksPerMillisecond) > 3000)
+                            {
+                                CTS = false;
+                                can2.SendMessage(reqIAT);
+                                LastTime[ModuleTimers.IAT] = System.DateTime.Now.Ticks;
+                            }
+                            PIDtoUpdate = 0;
+                            break;
+                    }        
           
                 }
-                if (CTS == true)
-                {
-                    if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.MAP]) / TimeSpan.TicksPerMillisecond) > 25)
-                    {
-                        CTS = false;
-                        can2.SendMessage(reqMAP);
-                        LastTime[ModuleTimers.MAP] = System.DateTime.Now.Ticks;
-                       
-                    }
-            
-                }
-                if (CTS == true)
-                {
-                    if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.Spark]) / TimeSpan.TicksPerMillisecond) > 25)
-                    {
-                        CTS = false;
-                        can2.SendMessage(reqSpark);
-                        LastTime[ModuleTimers.Spark] = System.DateTime.Now.Ticks;
-                       
-                    }
-             
-                }
-                if (CTS == true)
-                {
-                    if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.ECT]) / TimeSpan.TicksPerMillisecond) > 5000)
-                    {
-                        CTS = false;
-                        can2.SendMessage(reqECT);
-                        LastTime[ModuleTimers.ECT] = System.DateTime.Now.Ticks;
-                    }
-           
-                }
-                if (CTS == true)
-                {
-                    if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.IAT]) / TimeSpan.TicksPerMillisecond) > 3000)
-                    {
-                        CTS = false;
-                        can2.SendMessage(reqIAT);
-                        LastTime[ModuleTimers.IAT] = System.DateTime.Now.Ticks;
-                    }
-             
-                }
+              
 
-
+              
                 //Gauge Updates
                 if (BarGraph == true)
                 {
