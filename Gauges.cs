@@ -524,7 +524,7 @@ namespace NETMFBook1
                     {
                         _CurrentValue = value;
                         this.Invalidate();
-                        Debug.Print("Oh no.......");
+                     //   Debug.Print("Oh no.......");
                     }
                 }
             }
@@ -673,7 +673,9 @@ namespace NETMFBook1
             }
 
 
-            Bitmap _TempGaugeBitmap = new Bitmap(10, 10);
+            float TopVal = 0;
+            float bottomVal = 0;
+            int TempVal = 0;
             private void DrawNeedle()
             {
                 NeedlestartpointX = _GaugeImage.Width / 2;
@@ -681,11 +683,20 @@ namespace NETMFBook1
                 Needlelength = _GaugeImage.Width / 3;
 
 
+                if (_MinValue < 0) { }
 
 
+                if (_MinValue < 0)
+                {
+                    TempVal = _MinValue * -1;
+                }
+                else
+                {
+                    TempVal = _MinValue;
+                }
 
-                float TopVal = _CurrentValue + System.Math.Abs(_MinValue);
-                float bottomVal = _MaxValue - _MinValue; //so that is the total range
+               TopVal = _CurrentValue + TempVal;
+                  bottomVal = _MaxValue - _MinValue; //so that is the total range
                 bottomVal = bottomVal / 245;
 
                 // Needlepoint = (float)(System.Math.Abs(_CurrentValue)) / ((float)(((System.Math.Abs(_MinValue)) + _MaxValue) / 245));         //245deg max sweep max=max units (step size calc)

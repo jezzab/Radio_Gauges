@@ -43,7 +43,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="SmoothLine.cs" />
-    <Compile Include="WriteConfig.cs" />
+    <Compile Include="DataBaseConfig.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="GHI.Glide, Version=4.3.7.10, Culture=neutral, processorArchitecture=MSIL" />

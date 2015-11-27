@@ -24,6 +24,7 @@ using GHI.Glide.Geom;
 using GHI.IO.Storage;
 using GHI.Usb;
 using GHI.Usb.Host;
+using System.Collections;
 
 //enum for Update Timers
 public static class ModuleTimers
@@ -88,6 +89,8 @@ namespace NETMFBook1
         public static bool BarGraph = false;            //set default display screen
         public static bool CTS = true;
 
+            
+
         public static void Main()
         {
             // Overclock G120 w00t
@@ -106,6 +109,8 @@ namespace NETMFBook1
             Debug.Print("Waiting for USB insertion...");
             evt.WaitOne();                                      //Wait here until mounting and initializing is finished
 
+          //  rootDirectory = usb_storage.ProductId
+            //Process All Images
             FileStream fileHandle = new FileStream(rootDirectory + @"\GaugeBig.gif", FileMode.Open, FileAccess.Read);
             byte[] dataLargeDial = new byte[fileHandle.Length];
             fileHandle.Read(dataLargeDial, 0, dataLargeDial.Length);
@@ -119,6 +124,31 @@ namespace NETMFBook1
             fileHandle.Read(dataBackground, 0, dataBackground.Length);
             fileHandle.Close();
 
+            //Process Database for screen and Gauges
+            if (DataBaseConfig.IsDataBaseAvailable(rootDirectory) == false) //if datbase does not exist.. create default
+            {
+                DataBaseConfig.CreateDefaultDatabase(rootDirectory);
+            }
+            DataBaseConfig.ScreenConfig ScreenConfiguration = new  DataBaseConfig.ScreenConfig();
+            if (DataBaseConfig.ReadConfig(rootDirectory,ref ScreenConfiguration) == false) //bad config.. fail
+            {
+                Thread.Sleep(-1);
+            }
+
+            DataBaseConfig.GaugeConfig BigGauge_Left = new DataBaseConfig.GaugeConfig();
+            DataBaseConfig.GaugeConfig BigGauge_Right = new DataBaseConfig.GaugeConfig();
+            DataBaseConfig.GaugeConfig LittleGauge_Left = new DataBaseConfig.GaugeConfig();
+            DataBaseConfig.GaugeConfig LittleGauge_Right = new DataBaseConfig.GaugeConfig();
+            DataBaseConfig.GaugeConfig TopBar = new DataBaseConfig.GaugeConfig();
+            DataBaseConfig.GaugeConfig MiddleBar = new DataBaseConfig.GaugeConfig();
+            DataBaseConfig.GaugeConfig BottomBar = new DataBaseConfig.GaugeConfig();
+
+            ArrayList tabledata = new ArrayList();
+         //   if (DataBaseConfig.ReadPIDDatabase(rootDirectory, ref tabledata) == false) { Thread.Sleep(-1); } //Failed...
+   
+
+            
+
             //Init the timing array (this is bullshit, must be an easier way. Will try the GHI Timer function in future)
             LastTime[0] = System.DateTime.Now.Ticks;
             LastTime[1] = System.DateTime.Now.Ticks;
@@ -130,8 +160,7 @@ namespace NETMFBook1
             LastTime[7] = System.DateTime.Now.Ticks;
             LastTime[8] = System.DateTime.Now.Ticks;
 
-            //Timing for CTS flag
-            long CTSLastTime = 0;
+            long CTSLastTime = 0;//Timing for CTS flag
 
             //PID to Send
             int PIDtoUpdate = 0;
@@ -355,6 +384,8 @@ namespace NETMFBook1
         
                 }
 
+             //   RPM += 25;
+              //  Thread.Sleep(5);
 
 
                 //Check CTS
@@ -378,6 +409,7 @@ namespace NETMFBook1
                                 CTS = false;
                                 can2.SendMessage(reqRPM);
                                 LastTime[ModuleTimers.RPM] = System.DateTime.Now.Ticks;
+                                CTSLastTime = System.DateTime.Now.Ticks;
                             }
                             PIDtoUpdate += 1;
                             break;
@@ -388,7 +420,7 @@ namespace NETMFBook1
                                 CTS = false;
                                 can2.SendMessage(reqMAP);
                                 LastTime[ModuleTimers.MAP] = System.DateTime.Now.Ticks;
-
+                                CTSLastTime = System.DateTime.Now.Ticks;
                             }
                             PIDtoUpdate += 1;
                             break;
@@ -398,7 +430,7 @@ namespace NETMFBook1
                                 CTS = false;
                                 can2.SendMessage(reqSpark);
                                 LastTime[ModuleTimers.Spark] = System.DateTime.Now.Ticks;
-
+                                CTSLastTime = System.DateTime.Now.Ticks;
                             }
                             PIDtoUpdate += 1;
                             break;
@@ -408,6 +440,7 @@ namespace NETMFBook1
                                 CTS = false;
                                 can2.SendMessage(reqECT);
                                 LastTime[ModuleTimers.ECT] = System.DateTime.Now.Ticks;
+                                CTSLastTime = System.DateTime.Now.Ticks;
                             }
                             PIDtoUpdate += 1;
                             break;
@@ -417,6 +450,7 @@ namespace NETMFBook1
                                 CTS = false;
                                 can2.SendMessage(reqIAT);
                                 LastTime[ModuleTimers.IAT] = System.DateTime.Now.Ticks;
+                                CTSLastTime = System.DateTime.Now.Ticks;
                             }
                             PIDtoUpdate = 0;
                             break;
@@ -557,7 +591,7 @@ namespace NETMFBook1
                 */
             }
             evt.Set(); // proceed with other processing
-        }
+                    }
         private static void btn1_PressEvent(object sender)
         {
             Debug.Print("Button 1 tapped.");
