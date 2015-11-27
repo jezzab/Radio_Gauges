@@ -81,7 +81,6 @@ namespace NETMFBook1
         public static bool firstrun = true;
         public static bool IsS1 = true;                 //is this a S1 unit? If so send Nav enable packet
         public static bool IsAnalog = true;             //Analog or Bar display page default start
-        public static long[] TimeNow = new long[9];
         public static long[] LastTime = new long[9];
         public static int UpdateRate = 25;              //Rate to update the display/drop frames
         public static int RPMTime;
@@ -121,15 +120,6 @@ namespace NETMFBook1
             fileHandle.Close();
 
             //Init the timing array (this is bullshit, must be an easier way. Will try the GHI Timer function in future)
-            TimeNow[0] = System.DateTime.Now.Ticks;
-            TimeNow[1] = System.DateTime.Now.Ticks;
-            TimeNow[2] = System.DateTime.Now.Ticks;
-            TimeNow[3] = System.DateTime.Now.Ticks;
-            TimeNow[4] = System.DateTime.Now.Ticks;
-            TimeNow[5] = System.DateTime.Now.Ticks;
-            TimeNow[6] = System.DateTime.Now.Ticks;
-            TimeNow[7] = System.DateTime.Now.Ticks;
-            TimeNow[8] = System.DateTime.Now.Ticks;
             LastTime[0] = System.DateTime.Now.Ticks;
             LastTime[1] = System.DateTime.Now.Ticks;
             LastTime[2] = System.DateTime.Now.Ticks;
@@ -139,6 +129,10 @@ namespace NETMFBook1
             LastTime[6] = System.DateTime.Now.Ticks;
             LastTime[7] = System.DateTime.Now.Ticks;
             LastTime[8] = System.DateTime.Now.Ticks;
+
+            //Timing for CTS flag
+            long CTSLastTime = 0;
+
             Tween.NumSteps.SlideWindow = 25;
 
             if (IsS1) Debug.Print("Radio is a S1");
@@ -350,132 +344,100 @@ namespace NETMFBook1
 
                 if (IsS1) //Nav RGBS input enable packet for Series1
                 {
-                    if (((TimeNow[ModuleTimers.Nav] - LastTime[ModuleTimers.Nav]) / TimeSpan.TicksPerMillisecond) > 5000) //send ping packet every 5sec
+                    if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.Nav]) / TimeSpan.TicksPerMillisecond) > 5000) //send ping packet every 5sec
                     {
                         can1.SendMessage(PingNav);
-                        LastTime[ModuleTimers.Nav] = TimeNow[ModuleTimers.Nav];
+                        LastTime[ModuleTimers.Nav] = System.DateTime.Now.Ticks;
                     }
-                    else
+        
+                }
+
+
+                //Check CTS
+                if (CTS == false)
+                {
+                    if (((System.DateTime.Now.Ticks - CTSLastTime) / TimeSpan.TicksPerMillisecond) > 30)
                     {
-                        TimeNow[ModuleTimers.Nav] = System.DateTime.Now.Ticks;
+                        CTS = true;
                     }
                 }
+
 
                 //CAN Request Timers
                 if (CTS == true)
                 {
-                    if (((TimeNow[ModuleTimers.RPM] - LastTime[ModuleTimers.RPM]) / TimeSpan.TicksPerMillisecond) > 25)
+                    if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.RPM]) / TimeSpan.TicksPerMillisecond) > 25)
                     {
+                        CTS = false;
                         can2.SendMessage(reqRPM);
-                        LastTime[ModuleTimers.RPM] = TimeNow[ModuleTimers.RPM];
-                        CTS = false;
+                        LastTime[ModuleTimers.RPM] = System.DateTime.Now.Ticks;
+                       
                     }
-                    else
-                    {
-                        TimeNow[ModuleTimers.RPM] = System.DateTime.Now.Ticks;
-                    }
+          
                 }
                 if (CTS == true)
                 {
-                    if (((TimeNow[ModuleTimers.MAP] - LastTime[ModuleTimers.MAP]) / TimeSpan.TicksPerMillisecond) > 25)
+                    if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.MAP]) / TimeSpan.TicksPerMillisecond) > 25)
                     {
+                        CTS = false;
                         can2.SendMessage(reqMAP);
-                        LastTime[ModuleTimers.MAP] = TimeNow[ModuleTimers.MAP];
-                        CTS = false;
+                        LastTime[ModuleTimers.MAP] = System.DateTime.Now.Ticks;
+                       
                     }
-                    else
-                    {
-                        TimeNow[ModuleTimers.MAP] = System.DateTime.Now.Ticks;
-                    }
+            
                 }
                 if (CTS == true)
                 {
-                    if (((TimeNow[ModuleTimers.Spark] - LastTime[ModuleTimers.Spark]) / TimeSpan.TicksPerMillisecond) > 25)
+                    if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.Spark]) / TimeSpan.TicksPerMillisecond) > 25)
                     {
+                        CTS = false;
                         can2.SendMessage(reqSpark);
-                        LastTime[ModuleTimers.Spark] = TimeNow[ModuleTimers.Spark];
+                        LastTime[ModuleTimers.Spark] = System.DateTime.Now.Ticks;
+                       
+                    }
+             
+                }
+                if (CTS == true)
+                {
+                    if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.ECT]) / TimeSpan.TicksPerMillisecond) > 5000)
+                    {
                         CTS = false;
-                    }
-                    else
-                    {
-                        TimeNow[ModuleTimers.Spark] = System.DateTime.Now.Ticks;
-                    }
-                }
-                if (CTS == true)
-                {
-                    if (((TimeNow[ModuleTimers.ECT] - LastTime[ModuleTimers.ECT]) / TimeSpan.TicksPerMillisecond) > 5000)
-                    {
                         can2.SendMessage(reqECT);
-                        LastTime[ModuleTimers.ECT] = TimeNow[ModuleTimers.ECT];
+                        LastTime[ModuleTimers.ECT] = System.DateTime.Now.Ticks;
                     }
-                    else
-                    {
-                        TimeNow[ModuleTimers.ECT] = System.DateTime.Now.Ticks;
-                    }
+           
                 }
                 if (CTS == true)
                 {
-                    if (((TimeNow[ModuleTimers.IAT] - LastTime[ModuleTimers.IAT]) / TimeSpan.TicksPerMillisecond) > 3000)
+                    if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.IAT]) / TimeSpan.TicksPerMillisecond) > 3000)
                     {
+                        CTS = false;
                         can2.SendMessage(reqIAT);
-                        LastTime[ModuleTimers.IAT] = TimeNow[ModuleTimers.IAT];
+                        LastTime[ModuleTimers.IAT] = System.DateTime.Now.Ticks;
                     }
-                    else
-                    {
-                        TimeNow[ModuleTimers.IAT] = System.DateTime.Now.Ticks;
-                    }
+             
                 }
+
+
                 //Gauge Updates
                 if (BarGraph == true)
                 {
                     SlantGauge1.Value = RPM;
-                }
-                else
-                {
-                    AnaGauge1.Value = RPM;
-                }
-
-                if (BarGraph == true)
-                {
                     SlantGauge2.Value = Boost;
-                }
-                else
-                {
-                    AnaGauge2.Value = MAP;
-                }
-
-                if (BarGraph == true)
-                {
                     SlantGauge3.Value = TPS;
                 }
                 else
                 {
+                    AnaGauge1.Value = RPM;
+                    AnaGauge2.Value = MAP;
                     AnaGauge3.Value = SPKAdv;
-                }
-
-                if (BarGraph == true)
-                {
-                }
-                else
-                {
                     AnaGauge4.Value = ECT;
-                }
-
-                if (BarGraph == true)
-                { }
-                else
-                {
                     AnaGauge5.Value = IAT;
                 }
-                
-                if (BarGraph == true)
-                { }
-                else
-                {
-                    // AnaGauge5.Value = ETH;
-                }            
             }
+           
         }
+
         private static void can1_MessageAvailable(ControllerAreaNetwork sender, ControllerAreaNetwork.MessageAvailableEventArgs e)
         {
             //Debug.Print("CAN1 IRQ Called");
