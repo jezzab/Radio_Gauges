@@ -256,8 +256,8 @@ namespace NETMFBook1
                     else
                     {
                         _CurrentValue = value;
+                        this.Invalidate();
                     }
-                    this.Invalidate();
                 }
             }
 
@@ -523,8 +523,9 @@ namespace NETMFBook1
                     else
                     {
                         _CurrentValue = value;
+                        this.Invalidate();
+                        Debug.Print("Oh no.......");
                     }
-                    this.Invalidate();
                 }
             }
 

@@ -87,6 +87,7 @@ namespace NETMFBook1
         public static int RPMTime;
         public static int x, y;                         //gauge X Y position
         public static bool BarGraph = false;            //set default display screen
+        public static bool CTS = true;
 
         public static void Main()
         {
@@ -188,7 +189,7 @@ namespace NETMFBook1
             
             int StartX1 = 0x27;
             int StartY1 = 0x8;
-            int StartX2 = 0x4;
+            int StartX2 = 0x5;
             int StartY2 = 135;
             Gauges.AnalogueGauge AnaGauge1 = new Gauges.AnalogueGauge(window, dataLargeDial, digitalfont_small, digitalfont_big, "AnaGauge1", "RPM", 255, StartX1, StartY1, true);
             window.AddChild(AnaGauge1);
@@ -322,7 +323,7 @@ namespace NETMFBook1
 
             //Send Flow Control
             flowControl.ArbitrationId = 0x7E0;
-            flowControl.Data = new byte[] { 0x30, 0x00, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA };
+            flowControl.Data = new byte[] { 0x30, 0x00, 0x00, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA };
             flowControl.Length = 3;
             flowControl.IsExtendedId = false;
 
@@ -361,85 +362,95 @@ namespace NETMFBook1
                 }
 
                 //CAN Request Timers
-                if (((TimeNow[ModuleTimers.RPM] - LastTime[ModuleTimers.RPM]) / TimeSpan.TicksPerMillisecond) > 25)
+                if (CTS == true)
                 {
-                    can2.SendMessage(reqRPM);
-                    LastTime[ModuleTimers.RPM] = TimeNow[ModuleTimers.RPM];
+                    if (((TimeNow[ModuleTimers.RPM] - LastTime[ModuleTimers.RPM]) / TimeSpan.TicksPerMillisecond) > 25)
+                    {
+                        can2.SendMessage(reqRPM);
+                        LastTime[ModuleTimers.RPM] = TimeNow[ModuleTimers.RPM];
+                        CTS = false;
+                    }
+                    else
+                    {
+                        TimeNow[ModuleTimers.RPM] = System.DateTime.Now.Ticks;
+                    }
                 }
-                else
+                if (CTS == true)
                 {
-                    TimeNow[ModuleTimers.RPM] = System.DateTime.Now.Ticks;
+                    if (((TimeNow[ModuleTimers.MAP] - LastTime[ModuleTimers.MAP]) / TimeSpan.TicksPerMillisecond) > 25)
+                    {
+                        can2.SendMessage(reqMAP);
+                        LastTime[ModuleTimers.MAP] = TimeNow[ModuleTimers.MAP];
+                        CTS = false;
+                    }
+                    else
+                    {
+                        TimeNow[ModuleTimers.MAP] = System.DateTime.Now.Ticks;
+                    }
                 }
-                if (((TimeNow[ModuleTimers.MAP] - LastTime[ModuleTimers.MAP]) / TimeSpan.TicksPerMillisecond) > 25)
+                if (CTS == true)
                 {
-                    can2.SendMessage(reqMAP);
-                    LastTime[ModuleTimers.MAP] = TimeNow[ModuleTimers.MAP];
+                    if (((TimeNow[ModuleTimers.Spark] - LastTime[ModuleTimers.Spark]) / TimeSpan.TicksPerMillisecond) > 25)
+                    {
+                        can2.SendMessage(reqSpark);
+                        LastTime[ModuleTimers.Spark] = TimeNow[ModuleTimers.Spark];
+                        CTS = false;
+                    }
+                    else
+                    {
+                        TimeNow[ModuleTimers.Spark] = System.DateTime.Now.Ticks;
+                    }
                 }
-                else
+                if (CTS == true)
                 {
-                    TimeNow[ModuleTimers.MAP] = System.DateTime.Now.Ticks;
+                    if (((TimeNow[ModuleTimers.ECT] - LastTime[ModuleTimers.ECT]) / TimeSpan.TicksPerMillisecond) > 5000)
+                    {
+                        can2.SendMessage(reqECT);
+                        LastTime[ModuleTimers.ECT] = TimeNow[ModuleTimers.ECT];
+                    }
+                    else
+                    {
+                        TimeNow[ModuleTimers.ECT] = System.DateTime.Now.Ticks;
+                    }
                 }
-                if (((TimeNow[ModuleTimers.Spark] - LastTime[ModuleTimers.Spark]) / TimeSpan.TicksPerMillisecond) > 25)
+                if (CTS == true)
                 {
-                    can2.SendMessage(reqSpark);
-                    LastTime[ModuleTimers.Spark] = TimeNow[ModuleTimers.Spark];
+                    if (((TimeNow[ModuleTimers.IAT] - LastTime[ModuleTimers.IAT]) / TimeSpan.TicksPerMillisecond) > 3000)
+                    {
+                        can2.SendMessage(reqIAT);
+                        LastTime[ModuleTimers.IAT] = TimeNow[ModuleTimers.IAT];
+                    }
+                    else
+                    {
+                        TimeNow[ModuleTimers.IAT] = System.DateTime.Now.Ticks;
+                    }
                 }
-                else
-                {
-                    TimeNow[ModuleTimers.Spark] = System.DateTime.Now.Ticks;
-                }
-                if (((TimeNow[ModuleTimers.ECT] - LastTime[ModuleTimers.ECT]) / TimeSpan.TicksPerMillisecond) > 5000)
-                {
-                    can2.SendMessage(reqECT);
-                    LastTime[ModuleTimers.ECT] = TimeNow[ModuleTimers.ECT];
-                }
-                else
-                {
-                    TimeNow[ModuleTimers.ECT] = System.DateTime.Now.Ticks;
-                }
-                if (((TimeNow[ModuleTimers.IAT] - LastTime[ModuleTimers.IAT]) / TimeSpan.TicksPerMillisecond) > 3000)
-                {
-                    can2.SendMessage(reqIAT);
-                    LastTime[ModuleTimers.IAT] = TimeNow[ModuleTimers.IAT];
-                }
-                else
-                {
-                    TimeNow[ModuleTimers.IAT] = System.DateTime.Now.Ticks;
-                }
-
                 //Gauge Updates
                 if (BarGraph == true)
                 {
                     SlantGauge1.Value = RPM;
-                    oldRPM = RPM;
                 }
                 else
                 {
                     AnaGauge1.Value = RPM;
-                    oldRPM = RPM;
                 }
 
                 if (BarGraph == true)
                 {
                     SlantGauge2.Value = Boost;
-                    oldBoost = Boost;
-                    oldMAP = MAP;
                 }
                 else
                 {
                     AnaGauge2.Value = MAP;
-                    oldMAP = MAP;
                 }
 
                 if (BarGraph == true)
                 {
                     SlantGauge3.Value = TPS;
-                    oldTPS = TPS;
                 }
                 else
                 {
                     AnaGauge3.Value = SPKAdv;
-                    oldSPKAdv = SPKAdv;
                 }
 
                 if (BarGraph == true)
@@ -448,7 +459,6 @@ namespace NETMFBook1
                 else
                 {
                     AnaGauge4.Value = ECT;
-                    oldECT = ECT;
                 }
 
                 if (BarGraph == true)
@@ -456,7 +466,6 @@ namespace NETMFBook1
                 else
                 {
                     AnaGauge5.Value = IAT;
-                    oldIAT = IAT;
                 }
                 
                 if (BarGraph == true)
@@ -464,7 +473,6 @@ namespace NETMFBook1
                 else
                 {
                     // AnaGauge5.Value = ETH;
-                    oldETH = ETH;
                 }            
             }
         }
@@ -519,24 +527,6 @@ namespace NETMFBook1
             while (sender.AvailableMessages > 0)
             {
                 received = sender.ReadMessage();
-                if (firstrun == true) { }
-                else
-                {
-                    oldRPM = RPM;
-                    oldECT = ECT;
-                    oldIAT = IAT;
-                    oldTPS = TPS;
-                    oldMAP = MAP;
-                    oldETH = ETH;
-                    oldSPKAdv = SPKAdv;
-                    oldVSS = VSS;
-                    oldBoost = Boost;
-                    oldAFR = AFR;
-                    oldKR = KR;
-                    
-                    firstrun = false;
-                }
-
                 if (received.ArbitrationId == 0x7E8)
                 {
                     if (received.Data[0] == 0x10)                               //Send flow control packet           
@@ -565,6 +555,7 @@ namespace NETMFBook1
                         if ((received.Data[2] == 0x12)&&(received.Data[3] == 0xD9))                       //Knock Retard [KR]
                             KR = System.Math.Round(((double)received.Data[4] * 0.17578)*100.0)/100.0; 
                     }
+                    CTS = true;
                 }
             }
         }
