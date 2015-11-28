@@ -15,7 +15,7 @@ namespace NETMFBook1
 {
     public class DataBaseConfig
     {
-     static      AutoResetEvent evt = new AutoResetEvent(false);
+     static AutoResetEvent evt = new AutoResetEvent(false);
      static MassStorage usb_storage;
 
       public struct ScreenConfig
@@ -26,6 +26,7 @@ namespace NETMFBook1
             public int PID_BigLeft;
             public int PID_BigRight;
             public int PID_LittleLeft;
+            public int PID_LittleMiddle;
             public int PID_LittleRight;
             public int PID_TopBar;
             public int PID_MiddleBar;
@@ -49,10 +50,11 @@ namespace NETMFBook1
           BigLeft = 0,
           BigRight = 1,
           LittleLeft = 2,
-          LittleRight = 3,
-          TopBar = 4,
-          MiddleBar = 5,
-          BottomBar = 6
+          LittleMiddle = 3,
+          LittleRight = 4,
+          TopBar = 5,
+          MiddleBar = 6,
+          BottomBar = 7
       }
 
 
@@ -159,9 +161,9 @@ namespace NETMFBook1
                 ResultSet result = myDatabase.ExecuteQuery("SELECT * FROM tblConfig");
 
 
-               //    ArrayList tabledata = result.Data;
-            //    object obj = result[0, 0];
-               //  Debug.Print(obj.ToString());
+                 ArrayList tabledata = result.Data;
+                 object obj = result[0, 0];
+                 Debug.Print(obj.ToString());
 
                  Config.RadioType = (int)Int32.Parse(result[0, 0].ToString());
                  Config.DefaultWindow = (int)Int32.Parse(result[0, 1].ToString());
@@ -169,10 +171,11 @@ namespace NETMFBook1
                  Config.PID_BigLeft = (int)Int32.Parse(result[0, 3].ToString());
                  Config.PID_BigRight = (int)Int32.Parse(result[0, 4].ToString());
                  Config.PID_LittleLeft = (int)Int32.Parse(result[0, 5].ToString());
-                 Config.PID_LittleRight = (int)Int32.Parse(result[0, 6].ToString());
-                 Config.PID_TopBar = (int)Int32.Parse(result[0, 7].ToString());
-                 Config.PID_MiddleBar = (int)Int32.Parse(result[0, 8].ToString());
-                 Config.PID_BottomBar = (int)Int32.Parse(result[0, 9].ToString());
+                 Config.PID_LittleMiddle = (int)Int32.Parse(result[0, 6].ToString());
+                 Config.PID_LittleRight = (int)Int32.Parse(result[0, 7].ToString());
+                 Config.PID_TopBar = (int)Int32.Parse(result[0, 8].ToString());
+                 Config.PID_MiddleBar = (int)Int32.Parse(result[0, 9].ToString());
+                 Config.PID_BottomBar = (int)Int32.Parse(result[0, 10].ToString());
 
                 return true;
             }

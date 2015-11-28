@@ -56,7 +56,7 @@ namespace NETMFBook1
         public static string rootDirectory;
 
         public static ControllerAreaNetwork.Message flowControl = new ControllerAreaNetwork.Message();
-        public static ControllerAreaNetwork  can2 = new ControllerAreaNetwork(ControllerAreaNetwork.Channel.Two, ControllerAreaNetwork.Speed.Kbps500);
+        public static ControllerAreaNetwork  HSCAN = new ControllerAreaNetwork(ControllerAreaNetwork.Channel.Two, ControllerAreaNetwork.Speed.Kbps500);
 
         static ControllerAreaNetwork.Message received = null;
         static string data = string.Empty;
@@ -95,7 +95,7 @@ namespace NETMFBook1
         {
             // Overclock G120 w00t
             var EMCCLKSEL = new GHI.Processor.Register(0x400FC100);
-            //EMCCLKSEL.ClearBits(1 << 0); 
+            EMCCLKSEL.ClearBits(1 << 0); 
             
             //Look for USB.. setup event handles
             RemovableMedia.Insert += new InsertEventHandler(RemovableMedia_Insert); //event when inserted
@@ -176,7 +176,7 @@ namespace NETMFBook1
             //Setup the CAN bus timings. Tazzie is the man for GMLAN/HSCAN timing settings
             GHI.IO.ControllerAreaNetwork.Timings GMLANTimings = new ControllerAreaNetwork.Timings(0, 0xF, 0x8, 0x4B, 1);
             GHI.IO.ControllerAreaNetwork.Timings HSCANTimings = new ControllerAreaNetwork.Timings(0, 14, 5, 10, 1);
-            var can1 = new ControllerAreaNetwork(ControllerAreaNetwork.Channel.One, GMLANTimings);
+            var GMLAN = new ControllerAreaNetwork(ControllerAreaNetwork.Channel.One, GMLANTimings);
             //var can2 = new ControllerAreaNetwork(ControllerAreaNetwork.Channel.Two, ControllerAreaNetwork.Speed.Kbps500);
 
             //CAN Bus Explicit Filters
@@ -234,16 +234,16 @@ namespace NETMFBook1
             AnaGauge3.MinValue = -64;
             AnaGauge3.Value = 0;
 
-            Gauges.AnalogueGauge AnaGauge4 = new Gauges.AnalogueGauge(window, dataSmallDial, digitalfont_small, digitalfont_big, "AnaGauge4", "ECT", 255, StartX2 + 144, StartY2, false);
+            Gauges.AnalogueGauge AnaGauge4 = new Gauges.AnalogueGauge(window, dataSmallDial, digitalfont_small, digitalfont_big, "AnaGauge4", "Speed", 255, StartX2 + 144, StartY2, false);
             window.AddChild(AnaGauge4);
-            AnaGauge4.MaxValue = 100;
-            AnaGauge4.MinValue = -40;
+            AnaGauge4.MaxValue = 255;
+            AnaGauge4.MinValue = 0;
             AnaGauge4.Value = 0;
 
-            Gauges.AnalogueGauge AnaGauge5 = new Gauges.AnalogueGauge(window, dataSmallDial, digitalfont_small, digitalfont_big, "AnaGauge5", "IAT", 255, StartX2 + 144 + 144, StartY2, false);
+            Gauges.AnalogueGauge AnaGauge5 = new Gauges.AnalogueGauge(window, dataSmallDial, digitalfont_small, digitalfont_big, "AnaGauge5", "Knock", 255, StartX2 + 144 + 144, StartY2, false);
             window.AddChild(AnaGauge5);
-            AnaGauge5.MaxValue = 100;
-            AnaGauge5.MinValue = -40;
+            AnaGauge5.MaxValue = 40;
+            AnaGauge5.MinValue = 0;
             AnaGauge5.Value = 0;
 
             Gauges.SlantedGauge SlantGauge1 = new Gauges.SlantedGauge(window2, bar_mask, smallfont, bigfont, "SlantGauge1", "RPM", 255, 5, 5);
@@ -267,12 +267,12 @@ namespace NETMFBook1
             Debug.Print("Enabling HSCAN and GMLAN...");
             //can1.ErrorReceived += can_ErrorReceived;
             //can2.ErrorReceived += can_ErrorReceived;
-            can1.MessageAvailable += can1_MessageAvailable;
-            can2.MessageAvailable += can2_MessageAvailable;
-            can1.Enabled = true;
-            can2.Enabled = true;
-            can1.SetExplicitFilters(filter1);
-            can2.SetExplicitFilters(filter2);
+            GMLAN.MessageAvailable += GMLAN_MessageAvailable;
+            HSCAN.MessageAvailable += HSCAN_MessageAvailable;
+            GMLAN.Enabled = true;
+            HSCAN.Enabled = true;
+            GMLAN.SetExplicitFilters(filter1);
+            HSCAN.SetExplicitFilters(filter2);
             Debug.Print("CAN and Filters Enabled");
 
             //Define the Nav Enable packet for S1 Radio
@@ -354,7 +354,7 @@ namespace NETMFBook1
             flowControl.IsExtendedId = false;
 
             //send it the first time to fire things up if S1
-            if (IsS1) can1.SendMessage(PingNav);
+            if (IsS1) GMLAN.SendMessage(PingNav);
 
             if (BarGraph != true)
                 Glide.MainWindow = window;
@@ -378,87 +378,55 @@ namespace NETMFBook1
                 {
                     if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.Nav]) / TimeSpan.TicksPerMillisecond) > 5000) //send ping packet every 5sec
                     {
-                        can1.SendMessage(PingNav);
+                        GMLAN.SendMessage(PingNav);
                         LastTime[ModuleTimers.Nav] = System.DateTime.Now.Ticks;
                     }
-        
                 }
 
-             //   RPM += 25;
-              //  Thread.Sleep(5);
-
-
-                //Check CTS
-                if (CTS == false)
-                {
-                    if (((System.DateTime.Now.Ticks - CTSLastTime) / TimeSpan.TicksPerMillisecond) > 30)
-                    {
-                        CTS = true;
-                    }
-                }
-
-
-                //CAN Request Timers
+                //CAN Request Timers [settings below work for 31ms update time solid with no fluctuations
                 if (CTS == true)
                 {
-                    switch (PIDtoUpdate)
+                    if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.RPM]) / TimeSpan.TicksPerMillisecond) > 25)
                     {
-                        case 0:
-                            if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.RPM]) / TimeSpan.TicksPerMillisecond) > 25)
-                            {
-                                CTS = false;
-                                can2.SendMessage(reqRPM);
-                                LastTime[ModuleTimers.RPM] = System.DateTime.Now.Ticks;
-                                CTSLastTime = System.DateTime.Now.Ticks;
-                            }
-                            PIDtoUpdate += 1;
-                            break;
-
-                        case 1:
-                            if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.MAP]) / TimeSpan.TicksPerMillisecond) > 25)
-                            {
-                                CTS = false;
-                                can2.SendMessage(reqMAP);
-                                LastTime[ModuleTimers.MAP] = System.DateTime.Now.Ticks;
-                                CTSLastTime = System.DateTime.Now.Ticks;
-                            }
-                            PIDtoUpdate += 1;
-                            break;
-                        case 2:
-                            if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.Spark]) / TimeSpan.TicksPerMillisecond) > 25)
-                            {
-                                CTS = false;
-                                can2.SendMessage(reqSpark);
-                                LastTime[ModuleTimers.Spark] = System.DateTime.Now.Ticks;
-                                CTSLastTime = System.DateTime.Now.Ticks;
-                            }
-                            PIDtoUpdate += 1;
-                            break;
-                        case 3:
-                            if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.ECT]) / TimeSpan.TicksPerMillisecond) > 5000)
-                            {
-                                CTS = false;
-                                can2.SendMessage(reqECT);
-                                LastTime[ModuleTimers.ECT] = System.DateTime.Now.Ticks;
-                                CTSLastTime = System.DateTime.Now.Ticks;
-                            }
-                            PIDtoUpdate += 1;
-                            break;
-                        case 4:
-                            if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.IAT]) / TimeSpan.TicksPerMillisecond) > 3000)
-                            {
-                                CTS = false;
-                                can2.SendMessage(reqIAT);
-                                LastTime[ModuleTimers.IAT] = System.DateTime.Now.Ticks;
-                                CTSLastTime = System.DateTime.Now.Ticks;
-                            }
-                            PIDtoUpdate = 0;
-                            break;
-                    }        
-          
+                        CTS = false;
+                        HSCAN.SendMessage(reqRPM);
+                        LastTime[ModuleTimers.RPM] = System.DateTime.Now.Ticks;
+                        CTSLastTime = System.DateTime.Now.Ticks;
+                    }
+                    Thread.Sleep(5);
+                    if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.MAP]) / TimeSpan.TicksPerMillisecond) > 25)
+                    {
+                        CTS = false;
+                        HSCAN.SendMessage(reqMAP);
+                        LastTime[ModuleTimers.MAP] = System.DateTime.Now.Ticks;
+                        CTSLastTime = System.DateTime.Now.Ticks;
+                    }
+                    Thread.Sleep(5);
+                    if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.Spark]) / TimeSpan.TicksPerMillisecond) > 25)
+                    {
+                        CTS = false;
+                        HSCAN.SendMessage(reqSpark);
+                        LastTime[ModuleTimers.Spark] = System.DateTime.Now.Ticks;
+                        CTSLastTime = System.DateTime.Now.Ticks;
+                    }
+                    Thread.Sleep(5);
+                    if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.ECT]) / TimeSpan.TicksPerMillisecond) > 200)
+                    {
+                        CTS = false;
+                        HSCAN.SendMessage(reqVSS);
+                        LastTime[ModuleTimers.ECT] = System.DateTime.Now.Ticks;
+                        CTSLastTime = System.DateTime.Now.Ticks;
+                    }
+                    Thread.Sleep(5);
+                    if (((System.DateTime.Now.Ticks - LastTime[ModuleTimers.IAT]) / TimeSpan.TicksPerMillisecond) > 200)
+                    {
+                        CTS = false;
+                        HSCAN.SendMessage(reqKNKRET);
+                        LastTime[ModuleTimers.IAT] = System.DateTime.Now.Ticks;
+                        CTSLastTime = System.DateTime.Now.Ticks;
+                    }
+                    Thread.Sleep(5);
                 }
-              
-
               
                 //Gauge Updates
                 if (BarGraph == true)
@@ -472,16 +440,23 @@ namespace NETMFBook1
                     AnaGauge1.Value = RPM;
                     AnaGauge2.Value = MAP;
                     AnaGauge3.Value = SPKAdv;
-                    AnaGauge4.Value = ECT;
-                    AnaGauge5.Value = IAT;
+                    AnaGauge4.Value = VSS;
+                    AnaGauge5.Value = (int)KR;
+                }
+                //Check CTS
+                if (CTS == false)
+                {
+                    if (((System.DateTime.Now.Ticks - CTSLastTime) / TimeSpan.TicksPerMillisecond) > 30)
+                    {
+                        CTS = true;
+                    }
                 }
             }
-           
         }
 
-        private static void can1_MessageAvailable(ControllerAreaNetwork sender, ControllerAreaNetwork.MessageAvailableEventArgs e)
+        private static void GMLAN_MessageAvailable(ControllerAreaNetwork sender, ControllerAreaNetwork.MessageAvailableEventArgs e)
         {
-            //Debug.Print("CAN1 IRQ Called");
+            //Debug.Print("GMLAN IRQ Called");
             while (sender.AvailableMessages > 0)
             {
                 received = sender.ReadMessage();
@@ -524,17 +499,23 @@ namespace NETMFBook1
                 }
             }
         }
-        private static void can2_MessageAvailable(ControllerAreaNetwork sender, ControllerAreaNetwork.MessageAvailableEventArgs e)
+        private static void HSCAN_MessageAvailable(ControllerAreaNetwork sender, ControllerAreaNetwork.MessageAvailableEventArgs e)
         {
-            //Debug.Print("CAN2 IRQ Called"); 
+            //Debug.Print("HSCAN IRQ Called"); 
             while (sender.AvailableMessages > 0)
             {
+               // if (received.ArbitrationId == 0xC9)
+               // {
+               //     RPM = (((received.Data[1] * 0x100) + received.Data[2]) / 4);
+               //     TPS = (received.Data[4] * 100) / 255;
+               // }
+
                 received = sender.ReadMessage();
-                if (received.ArbitrationId == 0x7E8)
+                if(received.ArbitrationId == 0x7E8)
                 {
-                    if (received.Data[0] == 0x10)                               //Send flow control packet           
+                    if(received.Data[0] == 0x10)                               //Send flow control packet           
                         sender.SendMessage(flowControl);
-                    if ((received.Data[0] == 0x10) && (received.Data[2] == 0x62)) //Mode23 DMA PID Frame 1
+                    if((received.Data[0] == 0x10) && (received.Data[2] == 0x62)) //Mode23 DMA PID Frame 1
                         AFR = (float)received.Data[7] * (float)0.125;
                     if(received.Data[1] == 0x62)                                //Check is Mode22 Response
                     {
@@ -548,7 +529,7 @@ namespace NETMFBook1
                             Boost = (int)(MAP * 0.145 - 14.5);                                            //Convert to Boost PSI
                         }
                         if ((received.Data[2] == 0x00)&&(received.Data[3] == 0x0C))                       //Engine Speed [RPM]
-                            RPM = (((received.Data[4] * 0x100) + received.Data[5]) / 4);
+                            RPM = (((received.Data[4]<<8) + received.Data[5]) / 4);
                         if ((received.Data[2] == 0x00)&&(received.Data[3] == 0x0D))                       //Vehicle Speed [VSS]
                             VSS = received.Data[4];
                         if ((received.Data[2] == 0x00)&&(received.Data[3] == 0x0E))                       //Spark Advance
